@@ -493,7 +493,9 @@ const nf = (v,d=0)=> (!isFinite(v) ? "—" : v.toLocaleString("en-US",{minimumFr
 const pct = (v,d=1)=> (!isFinite(v) ? "—" : (v*100).toFixed(d)+"%");
 const mb  = (v,d=1)=> (!isFinite(v) ? "—" : (v/1e6).toFixed(d));
 const xx  = (v,d=2)=> (!isFinite(v) ? "—" : v.toFixed(d)+"x");
-const grade = (v, good, ok)=> !isFinite(v) ? "" : v >= good ? "pass" : v >= ok ? "warn" : "fail";
+// ตัดสินจากค่าที่ "ปัดแล้ว" ตามที่แสดงจริง ไม่งั้น 1.1999 จะโชว์ 1.20x แต่ติดป้ายเหลือง
+const grade = (v, good, ok, p=3)=>
+  !isFinite(v) ? "" : (v = +v.toFixed(p)) >= good ? "pass" : v >= ok ? "warn" : "fail";
 
 /* ============================ วาดช่องกรอก ============================ */
 function buildRail(){
@@ -602,7 +604,7 @@ function renderTiles(r){
      t:`hurdle ${pct(A.hurdleL,0)} · ถือ ${r.N} ปี`},
     {k:"Unlevered IRR", v:pct(r.irrU), c:grade(r.irrU, A.hurdleU, A.hurdleU-.02),
      t:`hurdle ${pct(A.hurdleU,0)} · ไม่ใช้หนี้`},
-    {k:"DSCR ปี 1", v:xx(r.dscr1), c:grade(r.dscr1, A.minDSCR, 1.0),
+    {k:"DSCR ปี 1", v:xx(r.dscr1), c:grade(r.dscr1, A.minDSCR, 1.0, 2),
      t:`ต่ำสุดตลอดสัญญา ${xx(r.dscrMin)} · เกณฑ์ ${xx(A.minDSCR)}`},
     {k:"NPV ผู้ถือหุ้น", v:mb(r.npvL)+" ลบ.", c:grade(r.npvL, 0, -1e7),
      t:`คิดลดที่ ${pct(A.hurdleL,0)} · Equity Multiple ${xx(r.em)}`},
@@ -739,7 +741,7 @@ function renderStress(){
          <td class="n"><span class="pill ${grade(x.r.yoc, A.targetYoC, A.targetYoC-.01)}">${pct(x.r.yoc)}</span></td>
          <td class="n"><span class="pill ${grade(x.r.irrL, A.hurdleL, A.hurdleL-.03)}">${pct(x.r.irrL)}</span></td>
          <td class="n">${i===0?"—":(isFinite(x.r.irrL)&&isFinite(base.irrL)?((x.r.irrL-base.irrL)*100).toFixed(1)+" pp":"—")}</td>
-         <td class="n"><span class="pill ${grade(x.r.dscr1, A.minDSCR, 1)}">${xx(x.r.dscr1)}</span></td>
+         <td class="n"><span class="pill ${grade(x.r.dscr1, A.minDSCR, 1, 2)}">${xx(x.r.dscr1)}</span></td>
          <td class="n">${xx(x.r.dscrMin)}</td>
          <td class="n">${mb(x.r.npvL)}</td>
        </tr>`).join("")}
