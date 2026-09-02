@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--A1-->
+<title>โต๊ะวิเคราะห์ดีลโรงแรม</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F1F4F3; --surface:#FFFFFF; --surface-2:#E7EDEB; --surface-3:#DCE5E3;
+  --line:#D2DBD9; --line-strong:#B2C1BE;
+  --ink:#101E1D; --ink-2:#465E5B; --ink-3:#728884;
+  --accent:#0B5F73; --accent-2:#0E7489; --accent-soft:#DAE9ED;
+  --pass:#2C7A51; --pass-bg:#DDEFE4; --pass-line:#9CCDB1;
+  --warn:#8F6410; --warn-bg:#F6EBD2; --warn-line:#DDBE7C;
+  --fail:#A63A31; --fail-bg:#F7DFDC; --fail-line:#E0A69F;
+  --shadow:0 1px 2px rgba(16,30,29,.05), 0 8px 24px -16px rgba(16,30,29,.28);
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1415; --surface:#131E20; --surface-2:#1A2629; --surface-3:#223034;
+    --line:#243336; --line-strong:#34484C;
+    --ink:#E1EBE9; --ink-2:#9BB0AD; --ink-3:#6E8481;
+    --accent:#57B4C4; --accent-2:#7ACAD7; --accent-soft:#123039;
+    --pass:#63C089; --pass-bg:#143020; --pass-line:#2C5E40;
+    --warn:#D9A950; --warn-bg:#33260F; --warn-line:#6A5220;
+    --fail:#E4837A; --fail-bg:#3B1D19; --fail-line:#70382F;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1415; --surface:#131E20; --surface-2:#1A2629; --surface-3:#223034;
+  --line:#243336; --line-strong:#34484C;
+  --ink:#E1EBE9; --ink-2:#9BB0AD; --ink-3:#6E8481;
+  --accent:#57B4C4; --accent-2:#7ACAD7; --accent-soft:#123039;
+  --pass:#63C089; --pass-bg:#143020; --pass-line:#2C5E40;
+  --warn:#D9A950; --warn-bg:#33260F; --warn-line:#6A5220;
+  --fail:#E4837A; --fail-bg:#3B1D19; --fail-line:#70382F;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans Thai","Segoe UI",system-ui,sans-serif;
+  font-size:14px; line-height:1.55;
+}
+h1,h2,h3{font-family:"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px;border-radius:4px}
+
+/* ---------- header ---------- */
+.top{
+  position:sticky; top:0; z-index:30;
+  background:color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.top-in{max-width:1560px;margin:0 auto;padding:12px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;gap:1px;margin-right:auto;min-width:0}
+.brand h1{font-size:17px;font-weight:700}
+.brand p{margin:0;font-size:11.5px;color:var(--ink-3);letter-spacing:.02em}
+.tools{display:flex;gap:6px;flex-wrap:wrap}
+.btn{
+  border:1px solid var(--line-strong); background:var(--surface); color:var(--ink);
+  padding:6px 11px; border-radius:7px; cursor:pointer; font-size:12.5px; font-weight:500;
+  transition:background .12s, border-color .12s;
+}
+.btn:hover{background:var(--surface-2);border-color:var(--accent)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .btn-primary, :root:not([data-theme="light"]) .btn-primary{color:#04191D}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .btn-primary{color:#fff}}
+.btn-primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+
+/* ---------- layout ---------- */
+.desk{max-width:1560px;margin:0 auto;display:grid;grid-template-columns:minmax(0,336px) minmax(0,1fr);align-items:start}
+.rail{
+  position:sticky; top:57px; max-height:calc(100vh - 57px); overflow-y:auto;
+  border-right:1px solid var(--line); background:var(--surface);
+  padding:16px 16px 60px;
+}
+.stage{padding:20px;display:flex;flex-direction:column;gap:22px;min-width:0}
+@media (max-width:1000px){
+  .desk{grid-template-columns:1fr}
+  .rail{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);order:2}
+  .stage{order:1}
+}
+
+/* ---------- input rail ---------- */
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:600;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3);
+}
+.grp{border-top:1px solid var(--line);padding:14px 0 4px}
+.grp:first-child{border-top:0;padding-top:0}
+.grp-h{display:flex;align-items:baseline;gap:8px;margin-bottom:9px}
+.grp-h .eyebrow{color:var(--accent)}
+.grp-h span.sub{font-size:11px;color:var(--ink-3);margin-left:auto}
+.f{display:grid;grid-template-columns:1fr 108px;gap:8px;align-items:center;padding:3px 0}
+.f label{font-size:12.5px;color:var(--ink-2);line-height:1.35}
+.f .unit{font-size:10.5px;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+.f input{
+  width:100%; text-align:right; padding:5px 8px; border-radius:6px;
+  border:1px solid var(--line-strong); background:var(--bg);
+  font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-size:12.5px;
+}
+.f input:hover{border-color:var(--accent)}
+.f input:focus{border-color:var(--accent);background:var(--surface)}
+.derived{
+  display:flex;justify-content:space-between;gap:10px;font-size:12px;
+  padding:6px 9px;margin-top:7px;border-radius:6px;background:var(--surface-2);color:var(--ink-2);
+}
+.derived b{font-family:"IBM Plex Mono",monospace;color:var(--ink);font-weight:600}
+.seg{display:flex;gap:0;border:1px solid var(--line-strong);border-radius:7px;overflow:hidden;margin:6px 0 2px}
+.seg button{flex:1;border:0;background:var(--bg);padding:6px 4px;font-size:11.5px;cursor:pointer;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#04191D}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#04191D}}
+.seg-l{font-size:12px;color:var(--ink-2);margin-top:10px}
+
+/* ---------- cards ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.card-h{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.card-h h2{font-size:14.5px;font-weight:600}
+.card-h p{margin:0;font-size:11.5px;color:var(--ink-3);flex:1 1 220px}
+.card-b{padding:14px 16px}
+
+/* ---------- verdict tiles ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(184px,1fr));gap:10px}
+.tile{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:11px 13px 12px;position:relative;overflow:hidden;box-shadow:var(--shadow);
+}
+.tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--line-strong)}
+.tile.pass::before{background:var(--pass)} .tile.warn::before{background:var(--warn)} .tile.fail::before{background:var(--fail)}
+.tile .k{font-size:11.5px;color:var(--ink-2);display:block;margin-bottom:3px}
+.tile .v{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.1;display:block}
+.tile .t{font-size:11px;color:var(--ink-3);margin-top:4px;display:block}
+.pill{
+  display:inline-block;padding:1px 7px;border-radius:20px;font-size:10.5px;font-weight:600;
+  border:1px solid var(--line-strong);background:var(--surface-2);color:var(--ink-2);
+}
+.pill.pass{background:var(--pass-bg);color:var(--pass);border-color:var(--pass-line)}
+.pill.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-line)}
+.pill.fail{background:var(--fail-bg);color:var(--fail);border-color:var(--fail-line)}
+
+/* ---------- verdict banner ---------- */
+.verdict{border-left:3px solid var(--line-strong);padding:12px 16px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);border-left-width:3px;box-shadow:var(--shadow)}
+.verdict.pass{border-left-color:var(--pass)} .verdict.warn{border-left-color:var(--warn)} .verdict.fail{border-left-color:var(--fail)}
+.verdict h2{font-size:15px;margin-bottom:4px}
+.verdict p{margin:0;font-size:12.5px;color:var(--ink-2)}
+.verdict ul{margin:7px 0 0;padding-left:18px;font-size:12.5px;color:var(--ink-2)}
+.verdict li{margin:2px 0}
+
+/* ---------- tables ---------- */
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:6px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:.03em;background:var(--surface-2);position:sticky;top:0}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+td.n{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+tr.em td{font-weight:600;background:var(--surface-2)}
+tbody tr:hover td{background:var(--surface-2)}
+.heat td.c{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;text-align:center;border:1px solid var(--surface)}
+.heat td.pass{background:var(--pass-bg);color:var(--pass);font-weight:600}
+.heat td.warn{background:var(--warn-bg);color:var(--warn)}
+.heat td.fail{background:var(--fail-bg);color:var(--fail)}
+.heat td.here{outline:2px solid var(--accent);outline-offset:-2px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-3);margin-top:9px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
+
+/* ---------- checklist ---------- */
+details.dd{border-top:1px solid var(--line)}
+details.dd summary{cursor:pointer;padding:9px 0;font-size:13px;font-weight:600;list-style:none;display:flex;gap:8px;align-items:center}
+details.dd summary::-webkit-details-marker{display:none}
+details.dd summary::before{content:"▸";color:var(--ink-3);transition:transform .15s;display:inline-block}
+details.dd[open] summary::before{transform:rotate(90deg)}
+.ck{display:grid;grid-template-columns:20px 1fr;gap:9px;padding:6px 0 6px 4px;border-top:1px dotted var(--line);align-items:start}
+.ck input{margin-top:3px;accent-color:var(--accent);width:15px;height:15px}
+.ck .t{font-size:12.5px}
+.ck .h{font-size:11.5px;color:var(--ink-3);margin-top:1px}
+.ck.hi .t::after{content:"สูง";margin-left:6px;font-size:10px;color:var(--fail);border:1px solid var(--fail-line);background:var(--fail-bg);padding:0 5px;border-radius:10px;font-weight:600}
+.ck input:checked + div .t{color:var(--ink-3);text-decoration:line-through}
+.prog{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);margin-left:auto;font-weight:400}
+
+.foot{max-width:1560px;margin:0 auto;padding:26px 20px 50px;color:var(--ink-3);font-size:11.5px;border-top:1px solid var(--line);line-height:1.7}
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(12px);
+  background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:12.5px;
+  opacity:0;pointer-events:none;transition:opacity .18s, transform .18s;z-index:60;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{
+  .top,.rail,.tools,.noprint{display:none!important}
+  .desk{grid-template-columns:1fr} .stage{padding:0} body{background:#fff}
+  .card,.tile{box-shadow:none;break-inside:avoid}
+}
+</style>
+<!--A2-->
+</head>
+<body>
+<!--A3-->
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <h1>โต๊ะวิเคราะห์ดีลโรงแรม</h1>
+      <p class="eyebrow">FEASIBILITY · NOI · IRR · DSCR · STRESS</p>
+    </div>
+    <div class="tools">
+      <button class="btn" id="btn-theme" title="สลับธีมสว่าง/มืด">◐ ธีม</button>
+      <button class="btn" id="btn-reset">รีเซ็ต</button>
+      <button class="btn" id="btn-save">บันทึกดีล</button>
+      <select class="btn" id="sel-load" style="max-width:170px"><option value="">ดีลที่บันทึกไว้…</option></select>
+      <button class="btn" id="btn-print">พิมพ์ / PDF</button>
+      <button class="btn btn-primary" id="btn-share">คัดลอกลิงก์</button>
+    </div>
+  </div>
+</header>
+
+<div class="desk">
+  <aside class="rail" id="rail"></aside>
+
+  <main class="stage">
+    <div id="verdict"></div>
+    <div class="tiles" id="tiles"></div>
+
+    <section class="card">
+      <div class="card-h">
+        <h2>โมเดล 10 ปี</h2>
+        <p>รายได้ → ต้นทุน → EBITDA → NOI → กระแสเงินสดผู้ถือหุ้น (หน่วย: ล้านบาท เว้นแต่ระบุ)</p>
+      </div>
+      <div class="card-b scroll"><table id="tbl-model"></table></div>
+    </section>
+
+    <section class="card">
+      <div class="card-h">
+        <h2>Sensitivity — Yield on Cost</h2>
+        <p>Occupancy × ADR ที่ปีคงที่ (stabilized) เทียบกับเงินลงทุนรวม · กรอบเข้ม = สมมติฐานปัจจุบัน</p>
+      </div>
+      <div class="card-b">
+        <div class="scroll"><table class="heat" id="tbl-heat"></table></div>
+        <div class="legend">
+          <span><i style="background:var(--pass)"></i>ผ่านเป้า YoC</span>
+          <span><i style="background:var(--warn)"></i>ต่ำกว่าเป้าไม่เกิน 1 จุด</span>
+          <span><i style="background:var(--fail)"></i>ไม่ผ่าน</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-h">
+        <h2>ราคาสูงสุดที่ควรจ่าย</h2>
+        <p>ย้อนกลับจากเกณฑ์แต่ละข้อ — ตัวเลขที่ต่ำที่สุดคือเพดานราคาเจรจาจริง</p>
+      </div>
+      <div class="card-b scroll"><table id="tbl-price"></table></div>
+    </section>
+
+    <section class="card">
+      <div class="card-h">
+        <h2>Stress Test</h2>
+        <p>คำนวณโมเดลใหม่ทั้งชุดในทุกสถานการณ์ — ไม่ใช่การแสดง Base Case ซ้ำ</p>
+      </div>
+      <div class="card-b scroll"><table id="tbl-stress"></table></div>
+    </section>
+
+    <section class="card">
+      <div class="card-h">
+        <h2>ราคาต่อห้องในตลาด</h2>
+        <p>ประกาศขายโรงแรม/รีสอร์ตหัวหิน 27 รายการ · แถบสีคือตำแหน่งดีลของคุณ</p>
+      </div>
+      <div class="card-b">
+        <div id="comps-me" class="derived" style="margin:0 0 12px"></div>
+        <div class="scroll" style="max-height:340px"><table id="tbl-comps"></table></div>
+      </div>
+    </section>
+
+    <section class="card noprint">
+      <div class="card-h">
+        <h2>Due Diligence — 36 รายการ</h2>
+        <p>ติ๊กได้ เก็บสถานะไว้ในเครื่องคุณเอง · "สูง" = ต้องเสร็จก่อนเซ็น LOI/วางมัดจำ</p>
+      </div>
+      <div class="card-b" id="dd"></div>
+    </section>
+  </main>
+</div>
+
+<footer class="foot">
+  โมเดลนี้เป็นเครื่องมือคัดกรองเบื้องต้น ไม่ใช่คำแนะนำการลงทุน — ตัวเลขที่ได้ดีเท่ากับสมมติฐานที่ใส่เข้าไปเท่านั้น
+  ก่อนตัดสินใจจริงต้องมีข้อมูล PMS ย้อนหลัง 24 เดือน งบการเงิน 3 ปี และผลตรวจ Due Diligence ครบ
+  · โมเดลก่อนภาษีเมื่อตั้ง CIT = 0 · ไม่รวมภาษีกำไรจากการขายทรัพย์สินตอน exit
+</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ============================ สเปกช่องกรอก ============================ */
+// s = ตัวคูณสำหรับแสดงผล (100 = เก็บเป็นทศนิยม แสดงเป็น %)
+const FIELDS = [
+ {g:"การลงทุน", k:"price",    l:"ราคาซื้อ",                     u:"บาท", s:1,   st:1000000},
+ {g:"การลงทุน", k:"ddPct",    l:"ค่า DD / กฎหมาย / ประเมิน",    u:"%",   s:100, st:0.1},
+ {g:"การลงทุน", k:"workCap",  l:"เงินทุนหมุนเวียน + FF&E สำรอง", u:"บาท", s:1,   st:100000},
+
+ {g:"รายได้", k:"rooms",     l:"จำนวนห้อง",                 u:"ห้อง", s:1,   st:1},
+ {g:"รายได้", k:"occ1",      l:"Occupancy ปี 1",            u:"%",   s:100, st:1},
+ {g:"รายได้", k:"occ2",      l:"Occupancy ปี 2",            u:"%",   s:100, st:1},
+ {g:"รายได้", k:"occ3",      l:"Occupancy ปี 3+ (stabilized)", u:"%", s:100, st:1},
+ {g:"รายได้", k:"adr",       l:"ADR ปีแรก",                 u:"บาท", s:1,   st:50},
+ {g:"รายได้", k:"adrGrowth", l:"ADR เติบโตต่อปี",           u:"%",   s:100, st:0.5},
+ {g:"รายได้", k:"fbPct",     l:"F&B + อื่น ๆ (% ของรายได้ห้อง)", u:"%", s:100, st:1},
+
+ {g:"ต้นทุนดำเนินงาน", k:"cStaff",   l:"บุคลากร",              u:"%", s:100, st:0.5},
+ {g:"ต้นทุนดำเนินงาน", k:"cUtil",    l:"สาธารณูปโภค",          u:"%", s:100, st:0.5},
+ {g:"ต้นทุนดำเนินงาน", k:"cFnb",     l:"ต้นทุน F&B",           u:"%", s:100, st:0.5},
+ {g:"ต้นทุนดำเนินงาน", k:"cSupply",  l:"ของใช้ / ผ้า / เคมี",  u:"%", s:100, st:0.5},
+ {g:"ต้นทุนดำเนินงาน", k:"cOta",     l:"OTA + การตลาด",        u:"%", s:100, st:0.5},
+ {g:"ต้นทุนดำเนินงาน", k:"cRepair",  l:"ซ่อมบำรุง",            u:"%", s:100, st:0.5},
+ {g:"ต้นทุนดำเนินงาน", k:"cAdmin",   l:"บริหาร / ประกัน / ใบอนุญาต", u:"%", s:100, st:0.5},
+ {g:"ต้นทุนดำเนินงาน", k:"maintCapexPct", l:"สำรองซ่อมบำรุงระยะยาว (CapEx)", u:"%", s:100, st:0.5},
+ {g:"ต้นทุนดำเนินงาน", k:"fixedPct",  l:"— ในนั้นเป็นต้นทุนคงที่", u:"%", s:100, st:1},
+ {g:"ต้นทุนดำเนินงาน", k:"varPct",    l:"— ในนั้นเป็นต้นทุนแปรผัน", u:"%", s:100, st:1},
+
+ {g:"การเงิน", k:"ltv",         l:"LTV (% ของราคาซื้อ)", u:"%",  s:100, st:5},
+ {g:"การเงิน", k:"rate",        l:"อัตราดอกเบี้ยต่อปี",   u:"%",  s:100, st:0.25},
+ {g:"การเงิน", k:"termYears",   l:"ระยะเวลากู้",          u:"ปี", s:1,   st:1},
+ {g:"การเงิน", k:"hurdleU",     l:"Hurdle — ไม่ใช้หนี้",  u:"%",  s:100, st:0.5},
+ {g:"การเงิน", k:"hurdleL",     l:"Hurdle — ผู้ถือหุ้น",  u:"%",  s:100, st:0.5},
+
+ {g:"ขายต่อ", k:"holdYears",   l:"ระยะถือครอง",             u:"ปี", s:1,   st:1},
+ {g:"ขายต่อ", k:"exitCap",     l:"Exit cap rate",           u:"%",  s:100, st:0.25},
+ {g:"ขายต่อ", k:"saleCostPct", l:"ค่าใช้จ่ายขายต่อ",        u:"%",  s:100, st:0.5},
+
+ {g:"ภาษี", k:"citRate",      l:"ภาษีนิติบุคคล (0 = ก่อนภาษี)", u:"%", s:100, st:1},
+ {g:"ภาษี", k:"buildShare",   l:"สัดส่วนมูลค่าอาคาร (คิดค่าเสื่อม)", u:"%", s:100, st:5},
+ {g:"ภาษี", k:"depYears",     l:"อายุคิดค่าเสื่อมอาคาร",     u:"ปี", s:1,   st:1},
+
+ {g:"เกณฑ์ตัดสิน", k:"targetYoC", l:"เป้า Yield on Cost", u:"%",  s:100, st:0.25},
+ {g:"เกณฑ์ตัดสิน", k:"minDSCR",   l:"DSCR ขั้นต่ำที่ยอมรับ", u:"x", s:1, st:0.05},
+];
+
+const DEFAULTS = {
+  price:265000000, ddPct:.01, workCap:5000000,
+  rooms:76, occ1:.58, occ2:.62, occ3:.65, adr:2200, adrGrowth:.025, fbPct:.15,
+  cStaff:.24, cUtil:.08, cFnb:.05, cSupply:.04, cOta:.09, cRepair:.03, cAdmin:.07,
+  maintCapexPct:.03, fixedPct:.38, varPct:.22,
+  ltv:.60, rate:.06, termYears:15, hurdleU:.09, hurdleL:.12,
+  holdYears:10, exitCap:.08, saleCostPct:.03,
+  citRate:0, buildShare:.70, depYears:20,
+  targetYoC:.075, minDSCR:1.20,
+  opexMode:"flat", terminalMode:"y10",
+};
+
+let A = {...DEFAULTS};
+
+/* ============================ คณิตศาสตร์การเงิน ============================ */
+function pmt(rate, nper, pv){
+  if(nper <= 0) return 0;
+  if(!rate) return pv/nper;
+  return pv*rate/(1 - Math.pow(1+rate, -nper));
+}
+function npv(rate, cf){ // cf[0] คือปี 0 ไม่คิดลด
+  let s = 0;
+  for(let i=0;i<cf.length;i++) s += cf[i]/Math.pow(1+rate, i);
+  return s;
+}
+function irr(cf){ // bisection — ทนกว่า Newton เมื่อ CF สลับเครื่องหมายหลายครั้ง
+  const f = r => { let s=0; for(let i=0;i<cf.length;i++) s += cf[i]/Math.pow(1+r,i); return s; };
+  let lo=-0.9999, hi=5, flo=f(lo), fhi=f(hi);
+  if(!isFinite(flo) || !isFinite(fhi) || flo*fhi > 0) return NaN;
+  for(let i=0;i<100;i++){
+    const mid=(lo+hi)/2, fm=f(mid);
+    if(!isFinite(fm)) return NaN;
+    if(flo*fm <= 0){ hi=mid; fhi=fm; } else { lo=mid; flo=fm; }
+  }
+  return (lo+hi)/2;
+}
+
+/* ============================ โมเดลหลัก ============================ */
+function calc(a){
+  const tc      = a.price*(1+a.ddPct) + a.workCap;
+  const loan    = a.price*a.ltv;
+  const equity  = tc - loan;
+  const nights  = a.rooms*365;
+  const N       = Math.max(1, Math.round(a.holdYears));
+  const opexPct = a.cStaff+a.cUtil+a.cFnb+a.cSupply+a.cOta+a.cRepair+a.cAdmin + (a.opexDelta||0);
+  const varPct  = a.varPct + (a.opexDelta||0);
+
+  const mRate = a.rate/12, nPer = Math.round(a.termYears*12);
+  const pay   = pmt(mRate, nPer, loan);
+  const dsFull = pay*12;
+
+  // ต้นทุนคงที่ยึดฐานจากรายได้ปีคงที่ (stabilized) เพื่อให้ปีที่ 3 ตรงกับโหมด %
+  const adr3 = a.adr*Math.pow(1+a.adrGrowth, 2);
+  const rev3 = nights*a.occ3*adr3*(1+a.fbPct);
+  const fixedBase = rev3*a.fixedPct;
+
+  const occOf = t => t===1 ? a.occ1 : t===2 ? a.occ2 : a.occ3;
+  const yearRows = [];
+  for(let t=1;t<=N;t++){
+    const occ  = occOf(t);
+    const adr  = a.adr*Math.pow(1+a.adrGrowth, t-1);
+    const sold = nights*occ;
+    const roomRev = sold*adr;
+    const rev  = roomRev*(1+a.fbPct);
+    // fixedBase ยึดฐานที่ปีคงที่ (ปี 3) อยู่แล้ว จึงเลื่อนด้วย (1+g)^(t-3) ไม่ใช่ ^(t-1)
+    const opex = a.opexMode === "split"
+      ? fixedBase*Math.pow(1+a.adrGrowth, t-3) + varPct*rev
+      : rev*opexPct;
+    const ebitda  = rev - opex;
+    const reserve = rev*a.maintCapexPct;
+    yearRows.push({t, occ, adr, sold, roomRev, rev, opex, ebitda, reserve, noi: ebitda - reserve});
+  }
+
+  // ตารางผ่อนชำระจริง → ดอกเบี้ยรายปี, ค่างวดจริง, ยอดหนี้คงเหลือ (บอลลูน)
+  let bal = loan;
+  const interest = [], dsArr = [];
+  for(let t=1;t<=N;t++){
+    let iy=0, py=0;
+    for(let m=0;m<12;m++){
+      if(bal <= 1e-6) break;
+      const i = bal*mRate;
+      let p = pay - i;
+      if(p > bal) p = bal;
+      if(p <= 0) { iy += i; py += i; break; } // ดอกเบี้ยกินค่างวดหมด (ไม่ควรเกิดในกรณีปกติ)
+      iy += i; py += i + p; bal -= p;
+    }
+    interest.push(iy); dsArr.push(py);
+  }
+  const balloon = Math.max(0, bal);
+
+  const dep = a.citRate > 0 ? a.price*a.buildShare/Math.max(1, a.depYears) : 0;
+  const noiN = yearRows[N-1].noi;
+  const terminalNOI = a.terminalMode === "forward" ? noiN*(1+a.adrGrowth) : noiN;
+  const exitNet = (terminalNOI/a.exitCap)*(1 - a.saleCostPct);
+
+  const cfU = [-tc], cfL = [-equity], rows = [];
+  for(let t=1;t<=N;t++){
+    const y = yearRows[t-1];
+    const taxU = a.citRate*Math.max(0, y.ebitda - dep);
+    const taxL = a.citRate*Math.max(0, y.ebitda - interest[t-1] - dep);
+    let u = y.noi - taxU;
+    let l = y.noi - dsArr[t-1] - taxL;
+    if(t === N){ u += exitNet; l += exitNet - balloon; }
+    cfU.push(u); cfL.push(l);
+    rows.push({...y, ds:dsArr[t-1], interest:interest[t-1], taxU, taxL, cfU:u, cfL:l,
+               dscr: dsArr[t-1] > 0 ? y.noi/dsArr[t-1] : Infinity});
+  }
+
+  const stabIdx = Math.min(3, N) - 1;
+  const noiStab = yearRows[stabIdx].noi;
+
+  // Occupancy ขั้นต่ำที่ NOI ปีคงที่พอจ่ายหนี้ — หาด้วยการไล่ค่า ใช้ได้ทั้งสองโหมดต้นทุน
+  const noiAtOcc = occ => {
+    const rev = nights*occ*adr3*(1+a.fbPct);
+    const opex = a.opexMode === "split" ? fixedBase + varPct*rev : rev*opexPct;
+    return rev - opex - rev*a.maintCapexPct;
+  };
+  const dsStab = dsArr[Math.min(2, N-1)] || 0;
+  let occDebt = NaN;
+  if(dsStab > 0){
+    let lo=0, hi=2;
+    if(noiAtOcc(hi) >= dsStab){
+      for(let i=0;i<80;i++){ const mid=(lo+hi)/2; if(noiAtOcc(mid) >= dsStab) hi=mid; else lo=mid; }
+      occDebt = hi;
+    }
+  } else occDebt = 0;
+
+  return {
+    tc, loan, equity, nights, N, opexPct, pay, dsFull, balloon, exitNet, terminalNOI,
+    rows, cfU, cfL, noiStab, dep,
+    yoc: noiStab/tc,
+    goingIn: yearRows[0].noi/a.price,
+    irrU: irr(cfU), irrL: irr(cfL),
+    npvU: npv(a.hurdleU, cfU), npvL: npv(a.hurdleL, cfL),
+    em: equity > 0 ? rows.reduce((s,r)=>s+r.cfL,0)/equity : NaN,
+    dscr1: rows[0].dscr,
+    dscrMin: Math.min(...rows.map(r=>r.dscr)),
+    beOcc: a.occ3*a.fixedPct/(1 - varPct),   // จุดคุ้มทุน EBITDA
+    occDebt,
+    pricePerKey: a.price/a.rooms,
+  };
+}
+
+/* ============================ ตัวช่วยจัดรูปแบบ ============================ */
+const nf = (v,d=0)=> (!isFinite(v) ? "—" : v.toLocaleString("en-US",{minimumFractionDigits:d, maximumFractionDigits:d}));
+const pct = (v,d=1)=> (!isFinite(v) ? "—" : (v*100).toFixed(d)+"%");
+const mb  = (v,d=1)=> (!isFinite(v) ? "—" : (v/1e6).toFixed(d));
+const xx  = (v,d=2)=> (!isFinite(v) ? "—" : v.toFixed(d)+"x");
+const grade = (v, good, ok)=> !isFinite(v) ? "" : v >= good ? "pass" : v >= ok ? "warn" : "fail";
+
+/* ============================ วาดช่องกรอก ============================ */
+function buildRail(){
+  const rail = document.getElementById("rail");
+  const groups = [];
+  FIELDS.forEach(f => { let g = groups.find(x=>x.name===f.g); if(!g){ g={name:f.g, items:[]}; groups.push(g);} g.items.push(f); });
+
+  rail.innerHTML = groups.map(g => `
+    <div class="grp" data-g="${g.name}">
+      <div class="grp-h"><span class="eyebrow">${g.name}</span><span class="sub" data-sub="${g.name}"></span></div>
+      ${g.items.map(f=>`
+        <div class="f">
+          <label for="in-${f.k}">${f.l} <span class="unit">${f.u}</span></label>
+          <input id="in-${f.k}" data-k="${f.k}" type="number" step="${f.st}" inputmode="decimal">
+        </div>`).join("")}
+      <div data-extra="${g.name}"></div>
+    </div>`).join("");
+
+  document.querySelector('[data-extra="การลงทุน"]').innerHTML =
+    `<div class="derived"><span>เงินลงทุนรวม</span><b id="d-tc">—</b></div>
+     <div class="derived"><span>ราคาต่อห้อง</span><b id="d-ppk">—</b></div>`;
+
+  document.querySelector('[data-extra="ต้นทุนดำเนินงาน"]').innerHTML =
+    `<div class="seg-l">โหมดต้นทุน</div>
+     <div class="seg" id="seg-opex">
+       <button data-v="flat">% ของรายได้ (ตรงกับ Excel)</button>
+       <button data-v="split">แยกคงที่ + แปรผัน</button>
+     </div>
+     <div class="derived"><span>รวมต้นทุนดำเนินงาน</span><b id="d-opex">—</b></div>`;
+
+  document.querySelector('[data-extra="การเงิน"]').innerHTML =
+    `<div class="derived"><span>เงินกู้</span><b id="d-loan">—</b></div>
+     <div class="derived"><span>เงินทุนผู้ถือหุ้น</span><b id="d-eq">—</b></div>
+     <div class="derived"><span>ผ่อนต่อเดือน</span><b id="d-pay">—</b></div>`;
+
+  document.querySelector('[data-extra="ขายต่อ"]').innerHTML =
+    `<div class="seg-l">NOI ที่ใช้ตีมูลค่าขายต่อ</div>
+     <div class="seg" id="seg-term">
+       <button data-v="y10">NOI ปีสุดท้าย (ตรงกับ Excel)</button>
+       <button data-v="forward">NOI ปีถัดไป</button>
+     </div>
+     <div class="derived"><span>มูลค่าขายต่อสุทธิ</span><b id="d-exit">—</b></div>
+     <div class="derived"><span>หนี้คงเหลือ (บอลลูน)</span><b id="d-bal">—</b></div>`;
+
+  rail.addEventListener("input", e => {
+    const k = e.target.dataset.k; if(!k) return;
+    const f = FIELDS.find(x=>x.k===k);
+    const raw = parseFloat(e.target.value);
+    A[k] = isFinite(raw) ? raw/f.s : DEFAULTS[k];
+    render(false);
+  });
+  document.getElementById("seg-opex").addEventListener("click", e=>{
+    const v = e.target.dataset.v; if(!v) return; A.opexMode = v; render();
+  });
+  document.getElementById("seg-term").addEventListener("click", e=>{
+    const v = e.target.dataset.v; if(!v) return; A.terminalMode = v; render();
+  });
+}
+
+function syncInputs(){
+  FIELDS.forEach(f=>{
+    const el = document.getElementById("in-"+f.k);
+    if(el && document.activeElement !== el){
+      const v = A[f.k]*f.s;
+      el.value = Math.abs(v) < 1e-9 ? 0 : parseFloat(v.toPrecision(12));
+    }
+  });
+  document.querySelectorAll("#seg-opex button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===A.opexMode));
+  document.querySelectorAll("#seg-term button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===A.terminalMode));
+}
+
+/* ============================ วาดผลลัพธ์ ============================ */
+function render(sync=true){
+  if(sync) syncInputs();
+  const r = calc(A);
+
+  document.getElementById("d-tc").textContent   = nf(r.tc/1e6,1)+" ลบ.";
+  document.getElementById("d-ppk").textContent  = nf(r.pricePerKey/1e6,2)+" ลบ./ห้อง";
+  document.getElementById("d-opex").textContent = pct(r.opexPct);
+  document.getElementById("d-loan").textContent = nf(r.loan/1e6,1)+" ลบ.";
+  document.getElementById("d-eq").textContent   = nf(r.equity/1e6,1)+" ลบ.";
+  document.getElementById("d-pay").textContent  = nf(r.pay)+" บ.";
+  document.getElementById("d-exit").textContent = nf(r.exitNet/1e6,1)+" ลบ.";
+  document.getElementById("d-bal").textContent  = nf(r.balloon/1e6,1)+" ลบ.";
+  const sumC = A.cStaff+A.cUtil+A.cFnb+A.cSupply+A.cOta+A.cRepair+A.cAdmin;
+  const sub = document.querySelector('[data-sub="ต้นทุนดำเนินงาน"]');
+  const split = A.fixedPct + A.varPct;
+  sub.textContent = Math.abs(split - sumC) > 0.005 ? `⚠ คงที่+แปรผัน ${pct(split,0)} ≠ ${pct(sumC,0)}` : "";
+  sub.style.color = "var(--warn)";
+
+  const cap = solveMaxPrice(A);   // แพงสุดในหน้านี้ — คำนวณครั้งเดียวแล้วส่งต่อ
+  renderTiles(r);
+  renderVerdict(r, cap);
+  renderModel(r);
+  renderHeat();
+  renderPrice(cap);
+  renderStress();
+  renderComps(r);
+}
+
+function renderTiles(r){
+  const t = [
+    {k:"Yield on Cost", v:pct(r.yoc), c:grade(r.yoc, A.targetYoC, A.targetYoC-.01),
+     t:`เป้า ${pct(A.targetYoC)} · NOI ปีคงที่ ÷ เงินลงทุนรวม`},
+    {k:"Levered IRR (ผู้ถือหุ้น)", v:pct(r.irrL), c:grade(r.irrL, A.hurdleL, A.hurdleL-.03),
+     t:`hurdle ${pct(A.hurdleL,0)} · ถือ ${r.N} ปี`},
+    {k:"Unlevered IRR", v:pct(r.irrU), c:grade(r.irrU, A.hurdleU, A.hurdleU-.02),
+     t:`hurdle ${pct(A.hurdleU,0)} · ไม่ใช้หนี้`},
+    {k:"DSCR ปี 1", v:xx(r.dscr1), c:grade(r.dscr1, A.minDSCR, 1.0),
+     t:`ต่ำสุดตลอดสัญญา ${xx(r.dscrMin)} · เกณฑ์ ${xx(A.minDSCR)}`},
+    {k:"NPV ผู้ถือหุ้น", v:mb(r.npvL)+" ลบ.", c:grade(r.npvL, 0, -1e7),
+     t:`คิดลดที่ ${pct(A.hurdleL,0)} · Equity Multiple ${xx(r.em)}`},
+    {k:"Going-in Yield", v:pct(r.goingIn), c:grade(r.goingIn, .06, .05),
+     t:`NOI ปีแรก ÷ ราคาซื้อ · Occ พอผ่อนหนี้ ${pct(r.occDebt)}`},
+  ];
+  document.getElementById("tiles").innerHTML = t.map(x=>`
+    <div class="tile ${x.c}">
+      <span class="k">${x.k}</span>
+      <span class="v">${x.v}</span>
+      <span class="t">${x.t}</span>
+    </div>`).join("");
+}
+
+function renderVerdict(r, cap){
+  const fails = [];
+  if(!(r.yoc  >= A.targetYoC)) fails.push(`Yield on Cost ${pct(r.yoc)} ต่ำกว่าเป้า ${pct(A.targetYoC)}`);
+  if(!(r.irrL >= A.hurdleL))   fails.push(`Levered IRR ${pct(r.irrL)} ต่ำกว่า hurdle ${pct(A.hurdleL,0)}`);
+  if(!(r.dscr1>= A.minDSCR))   fails.push(`DSCR ปี 1 ${xx(r.dscr1)} ต่ำกว่าเกณฑ์ ${xx(A.minDSCR)}`);
+  if(!(r.npvL > 0))            fails.push(`NPV ผู้ถือหุ้น ${mb(r.npvL)} ลบ. ติดลบ`);
+  if(!(r.occDebt < A.occ1))    fails.push(`ต้องได้ Occupancy ${pct(r.occDebt)} จึงพอผ่อนหนี้ — สูงกว่า Occ ปีแรกที่ตั้งไว้ ${pct(A.occ1)}`);
+
+  const best = Math.min(...cap.map(c=>c.p).filter(isFinite));
+  const cls = fails.length === 0 ? "pass" : fails.length <= 2 ? "warn" : "fail";
+  const head = fails.length === 0 ? "ผ่านเกณฑ์ที่ตั้งไว้ทุกข้อ"
+             : fails.length <= 2 ? "ผ่านบางส่วน — ยังต้องเจรจา"
+             : "ยังไม่ผ่านเกณฑ์";
+
+  document.getElementById("verdict").innerHTML = `
+    <div class="verdict ${cls}">
+      <h2>${head}</h2>
+      ${fails.length ? `<ul>${fails.map(f=>`<li>${f}</li>`).join("")}</ul>` : `<p>ตัวเลขทุกตัวอยู่เหนือเกณฑ์ที่คุณกำหนด — ขั้นต่อไปคือยืนยันสมมติฐานด้วยข้อมูลจริงจาก DD</p>`}
+      ${isFinite(best) ? `<p style="margin-top:8px">เพดานราคาที่ผ่านทุกเกณฑ์พร้อมกัน <b class="num">${nf(best/1e6,1)} ลบ.</b>
+        (${best < A.price ? "ต่ำกว่า" : "สูงกว่า"}ราคาปัจจุบัน ${pct(Math.abs(1-best/A.price))}) · <b class="num">${nf(best/A.rooms/1e6,2)}</b> ลบ./ห้อง</p>` : ""}
+    </div>`;
+}
+
+function renderModel(r){
+  const H = ["รายการ", ...r.rows.map(x=>"ปี "+x.t)];
+  const rowDefs = [
+    ["Occupancy",        x=>pct(x.occ,1)],
+    ["ADR (บาท)",        x=>nf(x.adr)],
+    ["คืนที่ขายได้",     x=>nf(x.sold)],
+    ["รายได้ห้องพัก",    x=>mb(x.roomRev)],
+    ["รายได้รวม",        x=>mb(x.rev), true],
+    ["ต้นทุนดำเนินงาน",  x=>mb(x.opex)],
+    ["EBITDA",           x=>mb(x.ebitda), true],
+    ["สำรองซ่อมบำรุง",   x=>mb(x.reserve)],
+    ["NOI",              x=>mb(x.noi), true],
+    ["ภาระหนี้ (P+I)",   x=>mb(x.ds)],
+    ["DSCR",             x=>xx(x.dscr)],
+    ["ภาษี",             x=>mb(x.taxL)],
+    ["CF ผู้ถือหุ้น",     x=>mb(x.cfL), true],
+  ];
+  document.getElementById("tbl-model").innerHTML =
+    `<thead><tr>${H.map(h=>`<th>${h}</th>`).join("")}</tr></thead>
+     <tbody>${rowDefs.map(([lab,fn,em])=>`
+       <tr class="${em?"em":""}"><td>${lab}</td>${r.rows.map(x=>`<td class="n">${fn(x)}</td>`).join("")}</tr>`).join("")}
+     </tbody>
+     <tfoot><tr class="em"><td>ปีที่ ${r.N}: + ขายต่อสุทธิ ${mb(r.exitNet)} ลบ. − บอลลูน ${mb(r.balloon)} ลบ.</td>
+       <td class="n" colspan="${r.rows.length}"></td></tr></tfoot>`;
+}
+
+function renderHeat(){
+  const occs = [-.10,-.05,0,.05,.10].map(d=>Math.max(.05, Math.min(.98, A.occ3+d)));
+  const adrs = [.85,.925,1,1.075,1.15].map(m=>Math.round(A.adr*m/25)*25);
+  const cells = occs.map(o => adrs.map(ad => calc({...A, occ3:o, adr:ad}).yoc));
+  document.getElementById("tbl-heat").innerHTML =
+    `<thead><tr><th>Occ \\ ADR</th>${adrs.map(a=>`<th style="text-align:center">${nf(a)}</th>`).join("")}</tr></thead>
+     <tbody>${occs.map((o,i)=>`
+       <tr><td class="n">${pct(o,0)}</td>${cells[i].map((v,j)=>{
+         const c = grade(v, A.targetYoC, A.targetYoC-.01);
+         const here = Math.abs(o-A.occ3)<1e-9 && Math.abs(adrs[j]-A.adr)<=12.5 ? " here" : "";
+         return `<td class="c ${c}${here}">${pct(v,1)}</td>`;
+       }).join("")}</tr>`).join("")}
+     </tbody>`;
+}
+
+// หาราคาซื้อสูงสุดที่ยังทำได้ตามเกณฑ์ — ทุกตัวชี้วัดลดลงเมื่อราคาสูงขึ้น จึงใช้ bisection ได้
+function solveMaxPrice(a){
+  const targets = [
+    {name:`Yield on Cost ≥ ${pct(a.targetYoC)}`,  fn:r=>r.yoc,   tv:a.targetYoC},
+    {name:`Levered IRR ≥ ${pct(a.hurdleL,0)}`,    fn:r=>r.irrL,  tv:a.hurdleL},
+    {name:`Unlevered IRR ≥ ${pct(a.hurdleU,0)}`,  fn:r=>r.irrU,  tv:a.hurdleU},
+    {name:`DSCR ปี 1 ≥ ${xx(a.minDSCR)}`,          fn:r=>r.dscr1, tv:a.minDSCR},
+    {name:`NPV ผู้ถือหุ้น ≥ 0`,                     fn:r=>r.npvL,  tv:0},
+  ];
+  return targets.map(t=>{
+    const g = p => { const v = t.fn(calc({...a, price:p})); return isFinite(v) ? v : -1e9; };
+    let lo = 1e6, hi = Math.max(a.price*4, 1e8);
+    if(g(lo) < t.tv) return {...t, p:NaN};
+    if(g(hi) >= t.tv) return {...t, p:hi};
+    for(let i=0;i<60;i++){ const mid=(lo+hi)/2; if(g(mid) >= t.tv) lo=mid; else hi=mid; }
+    return {...t, p:lo};
+  });
+}
+
+function renderPrice(rows){
+  const best = Math.min(...rows.map(x=>x.p).filter(isFinite));
+  document.getElementById("tbl-price").innerHTML =
+    `<thead><tr><th>เกณฑ์</th><th>ราคาสูงสุด (ลบ.)</th><th>ต่อห้อง (ลบ.)</th><th>ส่วนลดจากราคาปัจจุบัน</th></tr></thead>
+     <tbody>${rows.map(x=>`
+       <tr class="${isFinite(x.p)&&x.p===best?"em":""}">
+         <td>${x.name}</td>
+         <td class="n">${isFinite(x.p)?nf(x.p/1e6,1):"ทำไม่ได้ทุกราคา"}</td>
+         <td class="n">${isFinite(x.p)?nf(x.p/A.rooms/1e6,2):"—"}</td>
+         <td class="n">${isFinite(x.p)?(x.p<A.price?"−":"+")+pct(Math.abs(1-x.p/A.price),1):"—"}</td>
+       </tr>`).join("")}
+     </tbody>`;
+}
+
+const SCENARIOS = [
+  {n:"Base — สมมติฐานปัจจุบัน", p:{}},
+  {n:"Occupancy ทุกปี −10 จุด",  p:a=>({occ1:a.occ1-.10, occ2:a.occ2-.10, occ3:a.occ3-.10})},
+  {n:"ADR −10%",                 p:a=>({adr:a.adr*.90})},
+  {n:"ต้นทุนดำเนินงาน +5 จุด",   p:()=>({opexDelta:.05})},
+  {n:"ดอกเบี้ย +100 bps",        p:a=>({rate:a.rate+.01})},
+  {n:"Exit cap +100 bps",        p:a=>({exitCap:a.exitCap+.01})},
+  {n:"Downside รวม",             p:a=>({occ1:a.occ1-.05, occ2:a.occ2-.05, occ3:a.occ3-.05,
+                                        adr:a.adr*.95, opexDelta:.03, rate:a.rate+.005, exitCap:a.exitCap+.005})},
+];
+
+function renderStress(){
+  const rows = SCENARIOS.map(s=>{
+    const patch = typeof s.p === "function" ? s.p(A) : s.p;
+    return {n:s.n, r:calc({...A, ...patch})};
+  });
+  const base = rows[0].r;
+  document.getElementById("tbl-stress").innerHTML =
+    `<thead><tr><th>สถานการณ์</th><th>Yield on Cost</th><th>Levered IRR</th><th>Δ IRR</th><th>DSCR ปี 1</th><th>DSCR ต่ำสุด</th><th>NPV ผู้ถือหุ้น (ลบ.)</th></tr></thead>
+     <tbody>${rows.map((x,i)=>`
+       <tr class="${i===0?"em":""}">
+         <td>${x.n}</td>
+         <td class="n"><span class="pill ${grade(x.r.yoc, A.targetYoC, A.targetYoC-.01)}">${pct(x.r.yoc)}</span></td>
+         <td class="n"><span class="pill ${grade(x.r.irrL, A.hurdleL, A.hurdleL-.03)}">${pct(x.r.irrL)}</span></td>
+         <td class="n">${i===0?"—":(isFinite(x.r.irrL)&&isFinite(base.irrL)?((x.r.irrL-base.irrL)*100).toFixed(1)+" pp":"—")}</td>
+         <td class="n"><span class="pill ${grade(x.r.dscr1, A.minDSCR, 1)}">${xx(x.r.dscr1)}</span></td>
+         <td class="n">${xx(x.r.dscrMin)}</td>
+         <td class="n">${mb(x.r.npvL)}</td>
+       </tr>`).join("")}
+     </tbody>`;
+}
+
+/* ============================ ประกาศขายในตลาด ============================ */
+const COMPS = [
+ [9,10,"รีสอร์ท 7–9 ห้อง พร้อมสระว่ายน้ำ","หัวหิน"],
+ [18,12.5,"เกสต์เฮาส์ 18 ห้อง ย่าน Black Mountain","หัวหิน"],
+ [24,14.75,"อพาร์ตเมนต์ 24 ห้อง ซอย 94","ห่างหาด 900 ม."],
+ [9,15,"โรงแรม 9 ห้องนอน (สร้าง 2010)","ใจกลางเมือง"],
+ [11,15,"โรงแรม 11 ห้องนอน 800 ตร.ม.","หัวหิน"],
+ [8,18,"โรงแรมเล็ก 8 ห้อง ห่างหาด 300 ม.","หัวหิน"],
+ [7,20,"โรงแรม 7 ห้องนอน (สร้าง 1995)","ใจกลางเมือง"],
+ [14,20,"รีสอร์ท 14 ห้อง","ทับตะไค"],
+ [12,26.9,"โรงแรม 12 ห้อง 334 ตร.ม.","หัวหิน"],
+ [25,30,"รีสอร์ท 25 ห้อง (สร้าง 2015)","หนองแก"],
+ [8,35,"โรงแรม 8 ห้องนอน","หัวหิน"],
+ [null,42,"รีสอร์ท + ร้านอาหาร (สร้าง 2015)","ชายแดนหัวหิน–ชะอำ"],
+ [20,60,"โรงแรม 20 ห้อง (สร้าง 2024)","ซอยหัวหิน 94"],
+ [14,60,"โรงแรมเล็ก ห่างหาดตะเกียบ 50 ม.","เขาตะเกียบ"],
+ [null,62,"โรงแรมใจกลางเมืองริมหาด (สร้าง 2004)","หัวหินซิตี้"],
+ [18,70,"โรงแรม 3 ดาว 18 ห้อง","หัวหิน"],
+ [63,79,"โรงแรม 63 ห้อง (สร้าง 2007)","หนองแก"],
+ [33,90,"บูติคโรงแรม 33 ห้อง (รีโนเวตใหม่)","ใจกลางเมือง"],
+ [null,130,"โรงแรมดาวน์ทาวน์ (ประกาศใหม่)","Hua Hin City"],
+ [null,136.5,"โรงแรม Kocchira (off-plan)","เขาตะเกียบ"],
+ [null,165,"The Serenity Hua Hin","ซอยหัวหิน 5/1"],
+ [null,175,"รีสอร์ทหรูริมหาด (ที่ดิน 7 ไร่)","หัวหิน"],
+ [76,230,"Thipurai City Hotel (สร้าง 2002)","ใจกลางเมือง · ห่างหาด 200 ม."],
+ [76,265,"โรงแรม 76 ห้อง Turnkey (สร้าง 2024)","ถนนพูนศุข โซนฮิลตัน"],
+ [null,569.5,"อาคารโรงแรม + ไดรฟ์กอล์ฟ + สปอร์ตคอมเพล็กซ์","หัวหิน (27 ไร่)"],
+ [241,1700,"โรงแรม 4 ดาว 241 ห้อง ริมหาดส่วนตัว","หัวหิน–ชะอำ"],
+ [null,1800,"โรงแรมริมหาดขนาดใหญ่","หัวหิน"],
+];
+
+function renderComps(r){
+  const withKey = COMPS.filter(c=>c[0]).map(c=>({rooms:c[0], mb:c[1], ppk:c[1]/c[0], name:c[2], loc:c[3]}))
+                        .sort((a,b)=>a.ppk-b.ppk);
+  const me = r.pricePerKey/1e6;
+  const below = withKey.filter(c=>c.ppk < me).length;
+  document.getElementById("comps-me").innerHTML =
+    `<span>ดีลของคุณ <b class="num">${nf(me,2)}</b> ลบ./ห้อง — ${below} จาก ${withKey.length} ประกาศที่ระบุจำนวนห้องถูกกว่านี้
+     (ช่วงตลาด ${nf(withKey[0].ppk,2)}–${nf(withKey[withKey.length-1].ppk,2)} ลบ./ห้อง)</span>`;
+  document.getElementById("tbl-comps").innerHTML =
+    `<thead><tr><th>ประกาศ</th><th>ทำเล</th><th>ห้อง</th><th>ราคา (ลบ.)</th><th>ลบ./ห้อง</th></tr></thead>
+     <tbody>${withKey.map(c=>{
+       const near = Math.abs(c.ppk-me) < .35;
+       return `<tr class="${near?"em":""}"><td>${c.name}</td><td>${c.loc}</td>
+         <td class="n">${c.rooms}</td><td class="n">${nf(c.mb,1)}</td><td class="n">${nf(c.ppk,2)}</td></tr>`;
+     }).join("")}
+     ${COMPS.filter(c=>!c[0]).map(c=>`<tr><td>${c[2]}</td><td>${c[3]}</td><td class="n">—</td><td class="n">${nf(c[1],1)}</td><td class="n">—</td></tr>`).join("")}
+     </tbody>`;
+}
+
+/* ============================ Due Diligence ============================ */
+const DD = [
+["A. กรรมสิทธิ์ที่ดินและอาคาร",[
+ ["โฉนดที่ดิน (น.ส.4.จ)","ขอสำเนา + ตรวจที่สำนักงานที่ดินจังหวัด: ชื่อเจ้าของตรงผู้ขาย เนื้อที่ แนวเขต",1],
+ ["ภาระผูกพันทั้งหมด","จำนอง ยึดถือ ภาระติดพัน สัญญาเช่าที่จดทะเบียน",1],
+ ["ทางเข้าออก (Access)","ต้องติดถนนสาธารณะ — ถ้าผ่านที่ดินเอกชนต้องมี servitude จดทะเบียน",1],
+ ["ผังเมืองรวมหัวหิน","เช็คโซน ความสูง FAR และสิทธิก่อสร้างเพิ่ม",0],
+ ["คดีความ / ข้อพิพาท","ตรวจประวัติเจ้าของ-บริษัท-ที่ดิน ผ่านศาล และ DBD",1]]],
+["B. ใบอนุญาตและกฎระเบียบ",[
+ ["ใบอนุญาตโรงแรม (พ.ร.บ.โรงแรม 2547)","ขอไฟล์ใบอนุญาตเต็มชุดจากนายทะเบียน + เงื่อนไขแนบ",1],
+ ["จำนวนห้องตามใบอนุญาต","Licensed room count ต้องเท่ากับจำนวนห้องที่ขายจริง",1],
+ ["อายุ / ประวัติใบอนุญาต","อายุ 5 ปีต่อครั้ง — ตรวจประวัติต่ออายุ การถูกสั่งพักใช้",1],
+ ["การโอนใบอนุญาต","ต้องโอนเป็นชื่อผู้ซื้อ ผู้จัดการโรงแรมต้องเป็นคนไทยที่ผ่านอบรม",1],
+ ["ใบอนุญาตก่อสร้าง (ร.1) + รับรองใช้อาคาร (ร.6)","อาคารต้องได้รับอนุญาตใช้ประโยชน์เป็นโรงแรม",1],
+ ["แบบอาคาร vs ของจริง","เทียบแบบที่อนุมัติกับสิ่งปลูกสร้างจริง",1],
+ ["ระบบป้องกันอัคคีภัย","ทางหนีไฟ สปริงเกลอร์ ถังดับเพลิง ใบตรวจประจำปี",1],
+ ["EIA / IEE","ถ้าโครงการเกินเกณฑ์ — ขอรายงานและเงื่อนไขกำกับดูแล",0],
+ ["ใบอนุญาตรองทั้งชุด","สุรา อาหาร เครื่องเสียง ลิฟต์ สระว่ายน้ำ ป้าย — ทำ licence matrix",0]]],
+["C. โครงสร้างดีลและภาษี",[
+ ["Asset deal vs Share deal","Asset ชัดเจนกว่า / Share อาจลดภาษีแต่รับหนี้สินแฝง",1],
+ ["ภาษีธุรกรรมโอน","ค่าธรรมเนียม 2% อากรแสตมป์ 0.5% หรือ SBT 3.3%",1],
+ ["ราคาประเมินที่ดิน-อาคาร","ขอประเมินจากกรมที่ดิน / ผู้ประเมินอิสระ",0],
+ ["โครงสร้างบริษัท","DBD: ทุนจดทะเบียน ผู้ถือหุ้น หนี้สิน งบการเงิน",1],
+ ["โครงสร้างผู้ถือกรรมสิทธิ์ต่างชาติ","Land Code + FBA 2542: ห้าม nominee ตรวจ BOI 7.6 ถ้ามี",1]]],
+["D. การเงินและกิจการ",[
+ ["งบการเงิน 3 ปี","เทียบกับ DBD e-filing — แยกรายได้ room / F&B / other",1],
+ ["ข้อมูล PMS 24 เดือน","Occupancy / ADR / RevPAR รายเดือน ดู seasonality จริง",1],
+ ["รายได้ตามช่องทางขาย","OTA statements + สัดส่วน direct / corporate / walk-in",1],
+ ["ยืนยันกระแสเงินสด","สลิปบัญชีธนาคารเทียบรายได้ที่แจ้ง",1],
+ ["หนี้สินค้างจ่ายทั้งหมด","ซัพพลายเออร์ ภาษีค้าง เงินมัดจำลูกค้า",1],
+ ["ต้นทุนจริง vs ข้อสันนิษฐาน","ค่าจ้างรวม สาธารณูปโภค ประกัน — ใช้สร้างโมเดลของตัวเอง",1]]],
+["E. อาคารและระบบวิศวกรรม",[
+ ["สำรวจสภาพโครงสร้าง","จ้างวิศวกร: รอยร้าว การทรุด ความชื้น",1],
+ ["ระบบ M&E","Chiller/AC boiler ระบบไฟฟ้า ประปา — อายุการใช้งาน",1],
+ ["ลิฟต์","ประวัติตรวจตามกฎหมาย และต้นทุน overhaul ครั้งถัดไป",0],
+ ["หลังคา / สระ / บำบัดน้ำเสีย","สภาพจริง + กฎระเบียบท้องถิ่น",0],
+ ["FF&E inventory","อายุเฉลี่ย สภาพ มูลค่าทดแทน",1],
+ ["ประมาณการ CapEx ปรับปรุง","ให้ผู้รับเหมาประเมินก่อนเจรจา",1]]],
+["F. คน สัญญา และปฏิบัติการ",[
+ ["พนักงานทั้งหมด","โครงสร้าง ค่าจ้างรวม อายุงานสะสม — ค่าชดเชยเป็นหนี้ที่ต้องรับ",1],
+ ["สัญญาผู้บริหาร / แฟรนไชส์ / เช่าพื้นที่","สถานะ ระยะเวลา เงื่อนไขยกเลิก",0],
+ ["การจองล่วงหน้า / เงินมัดจำ","รายการ deposit ค้างรับ — ระบุใน SPA",0],
+ ["ทรัพย์สินดิจิทัล","ชื่อโรงแรม เว็บไซต์ บัญชี OTA รีวิว Google",0],
+ ["ประกันภัยและความเสี่ยงพื้นที่","ขอบเขตความคุ้มครอง ความเสี่ยงน้ำท่วม",0]]],
+];
+
+function ddStore(v){
+  try{
+    if(v === undefined) return JSON.parse(localStorage.getItem("hf.dd") || "{}");
+    localStorage.setItem("hf.dd", JSON.stringify(v));
+  }catch(e){ return {}; }
+  return v;
+}
+function renderDD(){
+  const state = ddStore() || {};
+  const root = document.getElementById("dd");
+  root.innerHTML = DD.map(([sec, items])=>{
+    const done = items.filter((_,i)=>state[`${sec}|${i}`]).length;
+    return `<details class="dd" data-sec="${sec}" open>
+      <summary>${sec}<span class="prog">${done}/${items.length}</span></summary>
+      ${items.map((it,i)=>`
+        <label class="ck ${it[2]?"hi":""}">
+          <input type="checkbox" data-dd="${sec}|${i}"${state[`${sec}|${i}`]?" checked":""}>
+          <div><div class="t">${it[0]}</div><div class="h">${it[1]}</div></div>
+        </label>`).join("")}
+    </details>`;
+  }).join("");
+
+  // อัปเดตตัวนับในที่เดิม ไม่ re-render ทั้งก้อน — ไม่งั้นหมวดที่ติ๊กครบจะหุบเอง
+  root.addEventListener("change", e=>{
+    const id = e.target.dataset.dd; if(!id) return;
+    const s = ddStore() || {}; s[id] = e.target.checked; ddStore(s);
+    const det = e.target.closest("details");
+    const boxes = det.querySelectorAll("input[type=checkbox]");
+    det.querySelector(".prog").textContent =
+      [...boxes].filter(b=>b.checked).length + "/" + boxes.length;
+  });
+}
+
+/* ============================ บันทึก / แชร์ ============================ */
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("on");
+  clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove("on"), 2200);
+}
+const enc = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/=+$/,"");
+const dec = s => JSON.parse(decodeURIComponent(escape(atob(s))));
+
+function loadFromHash(){
+  const m = location.hash.match(/d=([A-Za-z0-9+/]+)/);
+  if(!m) return;
+  try{ A = {...DEFAULTS, ...dec(m[1])}; }catch(e){ /* ลิงก์เสีย — ใช้ค่าตั้งต้น */ }
+}
+function deals(v){
+  try{
+    if(v === undefined) return JSON.parse(localStorage.getItem("hf.deals") || "{}");
+    localStorage.setItem("hf.deals", JSON.stringify(v));
+  }catch(e){ return {}; }
+  return v;
+}
+function refreshDealList(){
+  const d = deals() || {};
+  const sel = document.getElementById("sel-load");
+  sel.innerHTML = `<option value="">ดีลที่บันทึกไว้…</option>` +
+    Object.keys(d).map(k=>`<option value="${k}">${k}</option>`).join("");
+}
+
+document.getElementById("btn-share").onclick = ()=>{
+  const url = location.href.split("#")[0] + "#d=" + enc(A);
+  location.hash = "d=" + enc(A);
+  (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
+    .then(()=>toast("คัดลอกลิงก์แล้ว — เปิดลิงก์นี้จะได้สมมติฐานชุดเดียวกัน"))
+    .catch(()=>toast("ลิงก์อยู่ในช่อง URL แล้ว กด Ctrl+L เพื่อคัดลอก"));
+};
+document.getElementById("btn-save").onclick = ()=>{
+  // ตั้งชื่อจากตัวดีลเอง — prompt() ถูกบล็อกในหน้าที่ฝังใน sandbox
+  const name = `${A.rooms} ห้อง · ${Math.round(A.price/1e6)} ลบ. · ADR ${nf(A.adr)}`;
+  const d = deals() || {}; d[name] = A; deals(d); refreshDealList();
+  document.getElementById("sel-load").value = name;
+  toast("บันทึก “" + name + "” แล้ว (เก็บในเครื่องนี้เท่านั้น)");
+};
+document.getElementById("sel-load").onchange = e=>{
+  const d = deals() || {}; if(!d[e.target.value]) return;
+  A = {...DEFAULTS, ...d[e.target.value]}; render(); toast("โหลด " + e.target.value);
+};
+document.getElementById("btn-reset").onclick = ()=>{
+  A = {...DEFAULTS}; location.hash = ""; render(); toast("กลับไปที่ค่าตั้งต้น");
+};
+document.getElementById("btn-print").onclick = ()=>window.print();
+document.getElementById("btn-theme").onclick = ()=>{
+  const cur = document.documentElement.getAttribute("data-theme");
+  const dark = cur ? cur === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+};
+window.addEventListener("hashchange", ()=>{ loadFromHash(); render(); });
+
+/* ============================ เริ่มทำงาน ============================ */
+loadFromHash();
+buildRail();
+render();
+renderDD();
+refreshDealList();
+</script>
+<!--A4-->
+</body>
+</html>
