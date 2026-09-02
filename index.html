@@ -112,6 +112,9 @@ button,input,select{font:inherit;color:inherit}
 }
 .f input:hover{border-color:var(--accent)}
 .f input:focus{border-color:var(--accent);background:var(--surface)}
+.basis{grid-column:1/-1;display:none;margin:2px 0 6px;padding:6px 9px;font-size:11.5px;line-height:1.5;
+  color:var(--ink-2);background:var(--surface-2);border-left:2px solid var(--accent);border-radius:0 5px 5px 0}
+.rail.show-basis .basis{display:block}
 .derived{
   display:flex;justify-content:space-between;gap:10px;font-size:12px;
   padding:6px 9px;margin-top:7px;border-radius:6px;background:var(--surface-2);color:var(--ink-2);
@@ -172,6 +175,9 @@ tbody tr:hover td{background:var(--surface-2)}
 .heat td.warn{background:var(--warn-bg);color:var(--warn)}
 .heat td.fail{background:var(--fail-bg);color:var(--fail)}
 .heat td.here{outline:2px solid var(--accent);outline-offset:-2px}
+td.wrap{text-align:left;white-space:normal;min-width:180px}
+td.dim{color:var(--ink-3)}
+.note{font-size:12px;color:var(--ink-3);margin:12px 0 0;line-height:1.7}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-3);margin-top:9px}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
 
@@ -272,6 +278,22 @@ details.dd[open] summary::before{transform:rotate(90deg)}
 
     <section class="card">
       <div class="card-h">
+        <h2>วิธีคำนวณ</h2>
+        <p>ลำดับการคำนวณจริงของหน้านี้ พร้อมค่าปัจจุบัน — แก้ค่าที่แถบซ้ายแล้วตัวเลขคอลัมน์นี้เปลี่ยนตาม</p>
+      </div>
+      <div class="card-b scroll"><table id="tbl-method"></table></div>
+    </section>
+
+    <section class="card">
+      <div class="card-h">
+        <h2>Exit Cap Rate</h2>
+        <p>ตัวแปรที่กระทบมูลค่าขายต่อมากที่สุด — ประกอบค่าทีละส่วนแทนการเดา</p>
+      </div>
+      <div class="card-b" id="capbuild"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-h">
         <h2>ราคาต่อห้องในตลาด</h2>
         <p>ประกาศขายโรงแรม/รีสอร์ตหัวหิน 27 รายการ · แถบสีคือตำแหน่งดีลของคุณ</p>
       </div>
@@ -279,6 +301,14 @@ details.dd[open] summary::before{transform:rotate(90deg)}
         <div id="comps-me" class="derived" style="margin:0 0 12px"></div>
         <div class="scroll" style="max-height:340px"><table id="tbl-comps"></table></div>
       </div>
+    </section>
+
+    <section class="card">
+      <div class="card-h">
+        <h2>ลำดับการวิเคราะห์</h2>
+        <p>ทำทีละขั้นแล้วค่อยไปขั้นถัดไป — ข้ามขั้นไหนไป ผลลัพธ์ปลายทางจะเชื่อถือไม่ได้</p>
+      </div>
+      <div class="card-b scroll"><table id="tbl-guide"></table></div>
     </section>
 
     <section class="card noprint">
@@ -355,6 +385,43 @@ const DEFAULTS = {
   citRate:0, buildShare:.70, depYears:20,
   targetYoC:.075, minDSCR:1.20,
   opexMode:"flat", terminalMode:"y10",
+};
+
+// ที่มาของตัวเลขแต่ละช่อง — ยกมาจากชีต "สมมติฐาน" คอลัมน์ D ทั้งหมด
+const BASIS = {
+  price:"ประกาศ Thai Golden Prop — 76 ห้อง ถนนพูนศุข ห่างหาด 200 ม. (สร้าง 2024)",
+  ddPct:"ค่าทนาย ตรวจสอบกรรมสิทธิ์ ประเมินราคา — ประมาณการตามปฏิบัติทั่วไป",
+  workCap:"เงินสดหมุนเวียนช่วง ramp-up + สำรองเปลี่ยน FF&E",
+  rooms:"ตามประกาศขาย — ต้องตรงกับจำนวนห้องในใบอนุญาตโรงแรม",
+  occ1:"ธุรกิจเปลี่ยนมือ ramp-up ปีแรก ยังไม่มีฐานลูกค้าเดิม",
+  occ2:"ปีที่สองเริ่มเสถียร มีรีวิวและอันดับ OTA สะสมแล้ว",
+  occ3:"จ.ประจวบฯ เฉลี่ย 75.6% / ทั้งประเทศ 71.4% (2568) — ตั้งอนุรักษนิยมเพราะเป็นโรงแรมอิสระไม่มีแบรนด์",
+  adr:"ADR ทั้งประเทศ 1,819 บาท (2568) / Airbnb หัวหิน ~3,100–4,300 บาท",
+  adrGrowth:"สมมติเงินเฟ้อ + ปรับราคาตามตลาด",
+  fbPct:"ระดับทั่วไปของโรงแรมขนาดกลางที่ไม่มีแบรนด์",
+  cStaff:"ค่าจ้างขั้นต่ำธุรกิจโรงแรม 400 บาท/วัน",
+  cUtil:"ไฟฟ้า / น้ำ / อินเทอร์เน็ต",
+  cFnb:"~35% ของรายได้ F&B",
+  cSupply:"ผ้าเช็ดตัว สารเคมี ของใช้ในห้อง",
+  cOta:"โรงแรมอิสระพึ่งพา OTA สูง — ค่าคอมมิชชั่น 15–20% ของยอดผ่าน OTA",
+  cRepair:"อาคารใหม่ ปีแรก ๆ ต่ำกว่าค่าเฉลี่ย",
+  cAdmin:"A&G, ประกันภัย, บัญชี, ระบบ PMS/POS",
+  maintCapexPct:"สำรองทุนบำรุงรักษาระยะยาว — หักก่อนได้ NOI",
+  fixedPct:"บุคลากร + บริหาร + ซ่อมบำรุง + ครึ่งหนึ่งของสาธารณูปโภค",
+  varPct:"OTA + ต้นทุน F&B + ของใช้ + ครึ่งหนึ่งของสาธารณูปโภค",
+  ltv:"ระดับทั่วไปสำหรับสินเชื่อโรงแรม SME",
+  rate:"MLR กสิกร 6.52% / SME D Bank 7.05% — ขอ term sheet หลายธนาคารแล้วใช้กรณีแพงกว่า",
+  termYears:"ระยะกู้มาตรฐานสินเชื่อโรงแรม — ยาวขึ้นช่วย DSCR แต่จ่ายดอกเบี้ยรวมมากขึ้น",
+  hurdleU:"เป้าผลตอบแทนของผู้ซื้อสถาบันสำหรับ resort ไทย",
+  hurdleL:"ผลตอบแทนที่คาดหวังจากเงินทุนซึ่งรับความเสี่ยงสูงกว่าเพราะมีหนี้",
+  holdYears:"ระยะถือครองมาตรฐานของการวิเคราะห์ — ยาวไปสมมติฐานยิ่งเชื่อถือได้น้อย",
+  exitCap:"ทำเล prime 6.0–7.5% / เป้าสถาบัน resort 8–10% — ดูวิธีประกอบค่าที่การ์ด Exit Cap Rate",
+  saleCostPct:"ค่านายหน้า + ภาษีธุรกรรมตอนขายต่อ",
+  citRate:"ตั้ง 0 = โมเดลก่อนภาษีเหมือนไฟล์ Excel เดิม / ใส่ 20 เพื่อคิดภาษีนิติบุคคล",
+  buildShare:"ส่วนที่เป็นอาคารเท่านั้นที่คิดค่าเสื่อมได้ ที่ดินคิดไม่ได้",
+  depYears:"อายุคิดค่าเสื่อมอาคารตามหลักบัญชีทั่วไป",
+  targetYoC:"ต่ำกว่านี้แปลว่าซื้อแพงเทียบกับกระแสเงินสดที่ทรัพย์สร้างได้",
+  minDSCR:"ระดับที่ธนาคารมักกำหนดเป็นเงื่อนไขสินเชื่อ",
 };
 
 let A = {...DEFAULTS};
@@ -474,7 +541,7 @@ function calc(a){
 
   return {
     tc, loan, equity, nights, N, opexPct, pay, dsFull, balloon, exitNet, terminalNOI,
-    rows, cfU, cfL, noiStab, dep,
+    rows, cfU, cfL, noiStab, dep, stab: yearRows[stabIdx],
     yoc: noiStab/tc,
     goingIn: yearRows[0].noi/a.price,
     irrU: irr(cfU), irrL: irr(cfL),
@@ -503,13 +570,16 @@ function buildRail(){
   const groups = [];
   FIELDS.forEach(f => { let g = groups.find(x=>x.name===f.g); if(!g){ g={name:f.g, items:[]}; groups.push(g);} g.items.push(f); });
 
-  rail.innerHTML = groups.map(g => `
+  rail.innerHTML = `<button class="btn" id="btn-basis" style="width:100%;margin-bottom:14px"
+      aria-pressed="false">ที่มาของตัวเลข — แสดง</button>` + groups.map(g => `
     <div class="grp" data-g="${g.name}">
       <div class="grp-h"><span class="eyebrow">${g.name}</span><span class="sub" data-sub="${g.name}"></span></div>
       ${g.items.map(f=>`
         <div class="f">
           <label for="in-${f.k}">${f.l} <span class="unit">${f.u}</span></label>
-          <input id="in-${f.k}" data-k="${f.k}" type="number" step="${f.st}" inputmode="decimal">
+          <input id="in-${f.k}" data-k="${f.k}" type="number" step="${f.st}" inputmode="decimal"
+                 ${BASIS[f.k] ? `title="${BASIS[f.k].replace(/"/g,"&quot;")}"` : ""}>
+          ${BASIS[f.k] ? `<p class="basis">${BASIS[f.k]}</p>` : ""}
         </div>`).join("")}
       <div data-extra="${g.name}"></div>
     </div>`).join("");
@@ -540,6 +610,11 @@ function buildRail(){
      <div class="derived"><span>มูลค่าขายต่อสุทธิ</span><b id="d-exit">—</b></div>
      <div class="derived"><span>หนี้คงเหลือ (บอลลูน)</span><b id="d-bal">—</b></div>`;
 
+  document.getElementById("btn-basis").addEventListener("click", e => {
+    const on = rail.classList.toggle("show-basis");
+    e.target.setAttribute("aria-pressed", on);
+    e.target.textContent = "ที่มาของตัวเลข — " + (on ? "ซ่อน" : "แสดง");
+  });
   rail.addEventListener("input", e => {
     const k = e.target.dataset.k; if(!k) return;
     const f = FIELDS.find(x=>x.k===k);
@@ -593,6 +668,8 @@ function render(sync=true){
   renderHeat();
   renderPrice(cap);
   renderStress();
+  renderMethod(r);
+  renderCapBuild(r);
   renderComps(r);
 }
 
@@ -643,6 +720,9 @@ function renderVerdict(r, cap){
 }
 
 function renderModel(r){
+  let cu = r.cfU[0], cl = r.cfL[0];          // เริ่มจากเงินที่ควักปี 0
+  r.rows.forEach(x => { x.cumU = (cu += x.cfU); x.cumL = (cl += x.cfL); });
+  const payback = r.rows.find(x => x.cumL >= 0);
   const H = ["รายการ", ...r.rows.map(x=>"ปี "+x.t)];
   const rowDefs = [
     ["Occupancy",        x=>pct(x.occ,1)],
@@ -658,14 +738,20 @@ function renderModel(r){
     ["DSCR",             x=>xx(x.dscr)],
     ["ภาษี",             x=>mb(x.taxL)],
     ["CF ผู้ถือหุ้น",     x=>mb(x.cfL), true],
+    ["สะสม — ไม่ใช้หนี้", x=>mb(x.cumU)],
+    ["สะสม — ผู้ถือหุ้น", x=>mb(x.cumL), true],
   ];
   document.getElementById("tbl-model").innerHTML =
     `<thead><tr>${H.map(h=>`<th>${h}</th>`).join("")}</tr></thead>
      <tbody>${rowDefs.map(([lab,fn,em])=>`
        <tr class="${em?"em":""}"><td>${lab}</td>${r.rows.map(x=>`<td class="n">${fn(x)}</td>`).join("")}</tr>`).join("")}
      </tbody>
-     <tfoot><tr class="em"><td>ปีที่ ${r.N}: + ขายต่อสุทธิ ${mb(r.exitNet)} ลบ. − บอลลูน ${mb(r.balloon)} ลบ.</td>
-       <td class="n" colspan="${r.rows.length}"></td></tr></tfoot>`;
+     <tfoot><tr class="em">
+       <td>ปีที่ ${r.N}: + ขายต่อสุทธิ ${mb(r.exitNet)} ลบ. − บอลลูน ${mb(r.balloon)} ลบ.</td>
+       <td class="wrap" colspan="${r.rows.length}">${payback
+         ? `เงินผู้ถือหุ้นคืนทุนปีที่ ${payback.t}`
+         : `ยังไม่คืนทุนภายใน ${r.N} ปี ถ้าไม่นับเงินที่ได้จากการขาย`}</td>
+     </tr></tfoot>`;
 }
 
 function renderHeat(){
@@ -745,6 +831,154 @@ function renderStress(){
          <td class="n">${xx(x.r.dscrMin)}</td>
          <td class="n">${mb(x.r.npvL)}</td>
        </tr>`).join("")}
+     </tbody>`;
+}
+
+/* ============================ วิธีคำนวณ (ชีต "วิธีคำนวณ") ============================ */
+// อ้าง cell ของ Excel ไม่ได้แล้วเพราะที่นี่ไม่มีชีต จึงเก็บ "ลำดับ + สูตรแนวคิด + ค่าสด" แทน
+const METHOD = [
+ ["เงินลงทุนรวม (TC)","ราคาซื้อ x (1 + ค่า DD%) + เงินทุนหมุนเวียน",
+  r=>mb(r.tc)+" ลบ.","ยิ่งสูง ยิ่งต้องสร้าง NOI มากขึ้นเพื่อให้คุ้ม"],
+ ["คืนที่พร้อมขายต่อปี","จำนวนห้อง x 365",
+  r=>nf(r.nights)+" คืน","เพดานสูงสุดที่ขายได้ ยังไม่เกี่ยวกับ occupancy"],
+ ["คืนที่ขายได้ (ปีคงที่)","คืนที่พร้อมขาย x Occupancy",
+  r=>nf(r.stab.sold)+" คืน","ตัวขับรายได้หลักของโรงแรม"],
+ ["RevPAR (ปีคงที่)","ADR x Occupancy",
+  r=>nf(r.stab.adr*r.stab.occ)+" บาท","ใช้เทียบประสิทธิภาพ ราคา x การเข้าพัก กับคู่แข่ง"],
+ ["รายได้ห้องพัก","คืนที่ขายได้ x ADR",
+  r=>mb(r.stab.roomRev)+" ลบ.","เทียบกับข้อมูล PMS จริงย้อนหลัง 24 เดือน"],
+ ["รายได้รวม","รายได้ห้องพัก x (1 + F&B และรายได้อื่น%)",
+  r=>mb(r.stab.rev)+" ลบ.","อย่าให้รายได้อื่นสูงเกินหลักฐานรองรับ"],
+ ["EBITDA","รายได้รวม − ต้นทุนดำเนินงาน",
+  r=>mb(r.stab.ebitda)+" ลบ.","GOP โรงแรมไทยทั่วไป 38–50%"],
+ ["NOI","EBITDA − สำรองซ่อมบำรุงระยะยาว",
+  r=>mb(r.stab.noi)+" ลบ.","ฐานของทั้งมูลค่าทรัพย์สินและ Yield on Cost"],
+ ["Yield on Cost","NOI ปีคงที่ ÷ เงินลงทุนรวม",
+  r=>pct(r.yoc),"ควรสูงกว่าเป้าและเผื่อ margin of safety"],
+ ["Going-in Yield","NOI ปีแรก ÷ ราคาซื้อ",
+  r=>pct(r.goingIn),"คือ entry cap rate — ต้องต่ำกว่า exit cap เสมอ"],
+ ["เงินกู้ / ค่างวด","ราคาซื้อ x LTV ; PMT(ดอกเบี้ย÷12, ปี x 12, เงินกู้) x 12",
+  r=>mb(r.loan)+" / "+mb(r.dsFull)+" ลบ.ต่อปี","หนี้เพิ่มผลตอบแทนได้ แต่เพิ่มความเสี่ยงกระแสเงินสด"],
+ ["DSCR","NOI ÷ ภาระหนี้ต่อปี",
+  r=>xx(r.dscr1)+" (ปี 1)","1.00 = พอดีตัว · 1.20 = มี buffer 20%"],
+ ["ยอดหนี้คงเหลือตอนขาย","ยอดคงค้างหลังผ่อนครบตามระยะถือครอง",
+  r=>mb(r.balloon)+" ลบ.","ต้องหักออกจากเงินที่ได้ตอนขาย"],
+ ["มูลค่าขายต่อสุทธิ","NOI ปลายทาง ÷ Exit cap x (1 − ค่าใช้จ่ายขาย)",
+  r=>mb(r.exitNet)+" ลบ.","Exit cap ขยับนิดเดียว มูลค่าเปลี่ยนมาก"],
+ ["Unlevered IRR","อัตราคิดลดที่ทำให้ NPV ของกระแสเงินสดไม่ใช้หนี้ = 0",
+  r=>pct(r.irrU),"วัดคุณภาพของทรัพย์สินล้วน ๆ ไม่เกี่ยวกับวิธีจัดหาเงิน"],
+ ["Levered IRR","อัตราคิดลดที่ทำให้ NPV ของกระแสเงินสดผู้ถือหุ้น = 0",
+  r=>pct(r.irrL),"วัดผลตอบแทนของเงินที่ควักจริง ต้องสูงกว่า hurdle"],
+ ["NPV","CF ปี 0 + ผลรวมของ CF ปีที่ t ÷ (1 + hurdle)^t",
+  r=>mb(r.npvL)+" ลบ. (ผู้ถือหุ้น)","มากกว่า 0 = สร้างมูลค่าตามเกณฑ์ที่ตั้ง"],
+ ["Equity Multiple","ผลรวม CF ผู้ถือหุ้นทุกปี ÷ เงินทุนผู้ถือหุ้นเริ่มต้น",
+  r=>xx(r.em),"ไม่สะท้อนความเร็วของเงิน ต้องดูคู่กับ IRR"],
+ ["จุดคุ้มทุน EBITDA","Occupancy x ต้นทุนคงที่% ÷ (1 − ต้นทุนแปรผัน%)",
+  r=>pct(r.beOcc),"ต่ำกว่านี้คือขาดทุนระดับดำเนินงาน"],
+ ["Occupancy ที่พอผ่อนหนี้","แก้สมการ NOI(Occupancy) = ภาระหนี้ต่อปี",
+  r=>pct(r.occDebt),"ควรต่ำกว่า Occupancy ปีแรกอย่างมีระยะเผื่อ"],
+];
+
+function renderMethod(r){
+  document.getElementById("tbl-method").innerHTML =
+    `<thead><tr><th>#</th><th>รายการ</th><th>สูตร</th><th>ค่าปัจจุบัน</th><th>อ่านค่าอย่างไร</th></tr></thead>
+     <tbody>${METHOD.map(([lab,f,fn,how],i)=>`
+       <tr><td class="n">${i+1}</td><td>${lab}</td><td class="wrap">${f}</td>
+       <td class="n">${fn(r)}</td><td class="wrap dim">${how}</td></tr>`).join("")}
+     </tbody>`;
+}
+
+/* ============================ Exit Cap Rate (ชีต "Exit Cap Rate") ============================ */
+const CAPBUILD = [
+ ["พันธบัตรรัฐบาลไทย 10 ปี (risk-free)","2.06–2.33%",.022,"ThaiBMA: 10Y อยู่ 2.06% กลางปี 2569 คาดขยับ 2.19–2.33%"],
+ ["+ ความไม่สภาพคล่องของตลาดรอง","+0.75–1.50%",.010,"ผู้ซื้อน้อยกว่า กทม./ภูเก็ต ขายออกช้ากว่า"],
+ ["+ ความเสี่ยงธุรกิจโรงแรม","+2.00–3.00%",.025,"รายได้ผันผวนตามฤดูกาล พึ่งวันหยุดคนไทย แข่งขันสูง"],
+ ["+ ความเสื่อมสภาพอาคารตอนขาย","+0.50–1.00%",.008,"ยิ่งเก่ายิ่งต้องลด multiple"],
+ ["+ ต้นทุนธุรกรรมของผู้ซื้อรายต่อไป","+0.50–1.00%",.005,"ภาษีโอน + ค่านายหน้า ~3–4%"],
+];
+const CAPBENCH = [
+ ["Cap rate ทำเล prime กทม./ภูเก็ต (เทรดจริง)","6.0–7.5%","Baystreet Hospitality / JLL 2026"],
+ ["เป้าผู้ซื้อสถาบัน: กทม. CBD","7.5–9.0%","Baystreet Hospitality 2026"],
+ ["เป้าผู้ซื้อสถาบัน: โรงแรมรีสอร์ต","8.0–10.0%","Baystreet Hospitality 2026"],
+ ["Stabilized yield โรงแรมไทยทั่วไป","5.5–8.8%","Thai Golden Prop 2026"],
+ ["ทางเลือกปลอดภัย: พันธบัตรออมพลัส 10 ปี","2.80%","กระทรวงการคลัง ก.ค. 2569"],
+];
+
+function renderCapBuild(r){
+  const sum = CAPBUILD.reduce((a,x)=>a+x[2],0);
+  const spread = A.exitCap - r.goingIn;            // กฎ 1: exit ต้องสูงกว่า entry
+  const exitGross = r.terminalNOI/A.exitCap;       // กฎ 5: reverse check
+  const chk = [
+   {t:"ค่าที่ใช้อยู่เทียบกับ build-up", v:`${pct(A.exitCap)} / ${pct(sum)}`,
+    c: A.exitCap >= sum-0.0025 ? "pass" : "warn",
+    n: A.exitCap >= sum-0.0025 ? "ไม่ต่ำกว่าค่าที่ประกอบได้ — อนุรักษนิยมพอ"
+                               : "ต่ำกว่าค่าที่ประกอบได้ แปลว่ากำลังมองโลกดีเกินไป"},
+   {t:"Exit cap สูงกว่า entry cap (+25–75 bps)", v:`${(spread*10000).toFixed(0)} bps`,
+    c: spread >= .0025 ? "pass" : "fail",
+    n: spread >= .0025 ? "ผ่าน — ยอมรับว่าอาคารจะเก่าลงตอนขาย"
+                       : "ยังไม่ผ่าน — กำลังสมมติว่าขายได้ราคาดีกว่าตอนซื้อ"},
+   {t:"NOI ปลายทาง ÷ exit cap ≥ เงินลงทุนรวม", v:`${mb(exitGross)} / ${mb(r.tc)} ลบ.`,
+    c: exitGross >= r.tc ? "pass" : "fail",
+    n: exitGross >= r.tc ? "ผ่าน — ขายคืนทุนได้ก่อนนับกระแสเงินสดระหว่างทาง"
+                         : "ยังไม่ผ่าน — ต้องพึ่งกระแสเงินสดระหว่างถือครอง"},
+  ];
+  document.getElementById("capbuild").innerHTML = `
+    <div class="scroll"><table>
+      <thead><tr><th>ส่วนประกอบ</th><th>ช่วงอ้างอิง</th><th>ค่าที่ใช้</th><th>เหตุผล</th></tr></thead>
+      <tbody>${CAPBUILD.map(c=>`<tr><td>${c[0]}</td><td class="n">${c[1]}</td><td class="n">${pct(c[2],2)}</td>
+        <td class="wrap dim">${c[3]}</td></tr>`).join("")}
+        <tr class="em"><td>ผลบวกของส่วนประกอบทั้งหมด</td><td class="n">6.5–8.8%</td><td class="n">${pct(sum,2)}</td>
+        <td class="wrap">อาคารอายุ 10 ปีขึ้นไป → 8.0–8.5% · ใหม่หรือหรู → 7.5% · stress → 9.0%</td></tr>
+      </tbody></table></div>
+
+    <div class="tiles" style="margin-top:14px">${chk.map(c=>`
+      <div class="tile ${c.c}"><span class="k">${c.t}</span>
+      <span class="v" style="font-size:17px">${c.v}</span><span class="t">${c.n}</span></div>`).join("")}</div>
+
+    <div class="scroll" style="margin-top:14px"><table>
+      <thead><tr><th>เทียบกับ benchmark ตลาด</th><th>ค่า</th><th>ที่มา</th></tr></thead>
+      <tbody>${CAPBENCH.map(b=>`<tr><td>${b[0]}</td><td class="n">${b[1]}</td>
+        <td class="wrap dim">${b[2]}</td></tr>`).join("")}</tbody></table></div>
+
+    <p class="note"><b style="color:var(--warn)">หมายเหตุจากการตรวจไฟล์ Excel ต้นทาง:</b>
+      ส่วนประกอบทั้ง 5 บวกกันได้ ${pct(sum,2)} แต่ไฟล์ Excel เขียนไว้สองที่
+      (ชีต "Exit Cap Rate" และ "วิธีคำนวณ") ว่ารวมได้ 8.00% ซึ่งเป็นค่าที่โมเดลใช้จริง
+      หน้านี้แสดงผลบวกจริงของส่วนประกอบ ไม่ปรับตัวเลขให้ลงล็อก —
+      ถ้าจะยืน 8.00% ต้องเพิ่มน้ำหนักส่วนใดส่วนหนึ่งอีก 100 bps แล้วอธิบายเหตุผลได้
+      หรือจะลด exit cap ลงเป็น ${pct(sum,2)} ก็ได้ แต่มูลค่าขายต่อจะสูงขึ้นและ IRR จะดูดีขึ้นตาม</p>
+    <p class="note">กฎที่เหลือเมื่อทำโมเดล: ยึดอายุอาคาร ณ วันขายเป็นตัวตั้ง ·
+      ADR ที่โตปีละ ${pct(A.adrGrowth)} ช่วยชดเชย cap expansion ได้บางส่วน ·
+      stress test cap +100 bps ทุกครั้ง (ดูการ์ด Stress Test ด้านบน)</p>`;
+}
+
+/* ============================ ลำดับการวิเคราะห์ (ชีต "คู่มือเริ่มวิเคราะห์") ============================ */
+const GUIDE = [
+ ["ตั้งคำถามการลงทุนให้ชัด","จะซื้อหรือไม่ซื้อ ถือกี่ปี ก่อนหรือหลังภาษี มีหนี้หรือไม่",
+  "Capital Budgeting — ตัดสินจากกระแสเงินสด ไม่ใช่กำไรทางบัญชี","หมวดขายต่อ + ภาษี"],
+ ["ตรวจข้อเท็จจริงก่อนใส่ตัวเลข","กรรมสิทธิ์ ใบอนุญาต อาคาร สัญญา รายได้ย้อนหลัง ภาระผูกพัน",
+  "GIGO — ข้อมูลต้นทางผิด ผลลัพธ์ทั้งโมเดลผิด","การ์ด Due Diligence 36 รายการ"],
+ ["หาต้นทุนลงทุนทั้งหมด","เงินที่ต้องเตรียมจริงมากกว่าราคาซื้อเสมอ",
+  "Cost Basis — รวมค่า DD ค่าโอน และเงินทุนหมุนเวียน","หมวดการลงทุน"],
+ ["ประมาณรายได้","ห้อง x 365 x Occupancy x ADR แล้วบวกรายได้อื่น",
+  "Unit Economics + Ramp-up — ปีแรกยังไม่เต็มศักยภาพ","หมวดรายได้"],
+ ["ประมาณต้นทุนและ NOI","ต้นทุนครบ ไม่ลืม OTA บุคลากร ซ่อม และเงินสำรอง",
+  "Fixed vs Variable — ต้นทุนคงที่อยู่แม้ลูกค้าน้อย","หมวดต้นทุน + สวิตช์โหมดต้นทุน"],
+ ["ออกแบบเงินกู้","LTV ดอกเบี้ย ระยะกู้ ค่างวด และ DSCR",
+  "Financial Leverage — หนี้เพิ่มผลตอบแทนและความเสี่ยงพร้อมกัน","หมวดการเงิน"],
+ ["ประเมินมูลค่าขายต่อ","NOI ปลายทาง ÷ exit cap แล้วหักค่าใช้จ่ายขาย",
+  "Direct Capitalization — cap rate ลดนิดเดียว มูลค่าเพิ่มมาก จึงต้องระวัง","การ์ด Exit Cap Rate"],
+ ["วัดผลตอบแทนและทดสอบความเสี่ยง","YoC, IRR, NPV, Equity Multiple, DSCR แล้ว stress ทุกตัวแปร",
+  "Time Value of Money + Margin of Safety — ห้ามตัดสินจาก Base Case กรณีเดียว","การ์ด Stress Test + Sensitivity"],
+ ["สรุปเงื่อนไขก่อนลงทุน","ราคาสูงสุด เงื่อนไขสินเชื่อ และรายการ DD ที่ต้องผ่าน",
+  "ทำข้อเสนอแบบมีเงื่อนไข ไม่ตัดสินจาก Base Case อย่างเดียว","การ์ดราคาสูงสุดที่ควรจ่าย"],
+];
+
+function renderGuide(){
+  document.getElementById("tbl-guide").innerHTML =
+    `<thead><tr><th>ขั้น</th><th>ต้องทำอะไร</th><th>ผลลัพธ์ที่ต้องได้</th><th>ทฤษฎีที่ใช้</th><th>ทำที่ไหนในหน้านี้</th></tr></thead>
+     <tbody>${GUIDE.map((g,i)=>`<tr><td class="n">${i+1}</td><td>${g[0]}</td>
+       <td class="wrap">${g[1]}</td><td class="wrap dim">${g[2]}</td>
+       <td class="wrap" style="color:var(--accent)">${g[3]}</td></tr>`).join("")}
      </tbody>`;
 }
 
@@ -939,6 +1173,7 @@ loadFromHash();
 buildRail();
 render();
 renderDD();
+renderGuide();
 refreshDealList();
 </script>
 <!--A4-->
