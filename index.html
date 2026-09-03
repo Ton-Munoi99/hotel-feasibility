@@ -295,10 +295,12 @@ details.dd[open] summary::before{transform:rotate(90deg)}
     <section class="card">
       <div class="card-h">
         <h2>ราคาต่อห้องในตลาด</h2>
-        <p>ประกาศขายโรงแรม/รีสอร์ตหัวหิน 27 รายการ · แถบสีคือตำแหน่งดีลของคุณ</p>
+        <p>เทียบราคาต่อห้องของดีลคุณกับประกาศขายจริง · แถวที่เน้นคือรายการที่ราคาใกล้เคียงดีลคุณ</p>
       </div>
       <div class="card-b">
-        <div id="comps-me" class="derived" style="margin:0 0 12px"></div>
+        <div class="seg" id="seg-market" style="margin:0 0 12px"></div>
+        <div id="comps-me" class="derived" style="margin:0 0 6px"></div>
+        <p class="note" id="comps-src" style="margin:0 0 12px"></p>
         <div class="scroll" style="max-height:340px"><table id="tbl-comps"></table></div>
       </div>
     </section>
@@ -384,7 +386,7 @@ const DEFAULTS = {
   holdYears:10, exitCap:.08, saleCostPct:.03,
   citRate:0, buildShare:.70, depYears:20,
   targetYoC:.075, minDSCR:1.20,
-  opexMode:"flat", terminalMode:"y10",
+  opexMode:"flat", terminalMode:"y10", market:"หัวหิน–ประจวบฯ",
 };
 
 // ที่มาของตัวเลขแต่ละช่อง — ยกมาจากชีต "สมมติฐาน" คอลัมน์ D ทั้งหมด
@@ -983,7 +985,8 @@ function renderGuide(){
 }
 
 /* ============================ ประกาศขายในตลาด ============================ */
-const COMPS = [
+const MARKETS = {
+ "หัวหิน–ประจวบฯ": {src:"รวบรวมจาก Thaihometown, FazWaz, Hipflat, Lazudi, Hua Hin Property Listing, Thai Golden Prop, Thailand Property, Livinginsider", rows:[
  [9,10,"รีสอร์ท 7–9 ห้อง พร้อมสระว่ายน้ำ","หัวหิน"],
  [18,12.5,"เกสต์เฮาส์ 18 ห้อง ย่าน Black Mountain","หัวหิน"],
  [24,14.75,"อพาร์ตเมนต์ 24 ห้อง ซอย 94","ห่างหาด 900 ม."],
@@ -1011,25 +1014,57 @@ const COMPS = [
  [null,569.5,"อาคารโรงแรม + ไดรฟ์กอล์ฟ + สปอร์ตคอมเพล็กซ์","หัวหิน (27 ไร่)"],
  [241,1700,"โรงแรม 4 ดาว 241 ห้อง ริมหาดส่วนตัว","หัวหิน–ชะอำ"],
  [null,1800,"โรงแรมริมหาดขนาดใหญ่","หัวหิน"],
-];
+ ]},
+ "ระยอง–เกาะเสม็ด": {src:"รวบรวมจาก Thailand-Property (ก.ย. 2569) — ประกาศที่ระบุจำนวนห้องชัดเจนเท่านั้น", rows:[
+ [3,7.99,"รีสอร์ตขนาดเล็ก ที่ดิน 2-1-10 ไร่","แกลง · เนินฆ้อ"],
+ [9,7.99,"Eco Resort (ผังรองรับได้ถึง 20 ห้อง)","แกลง · เนินฆ้อ"],
+ [5,8.5,"เกสต์เฮาส์ใกล้หาดแม่พิมพ์","แกลง · กร่ำ"],
+ [7,8.9,"เกสต์เฮาส์พร้อมสระว่ายน้ำ","เมืองระยอง · เพ"],
+ [7,12.9,"รีสอร์ตพูลวิลล่า + บังกะโล","เมืองระยอง · ในไร่–เพ"],
+ [20,20,"รีสอร์ตขนาดเล็ก ใกล้ถนนสุขุมวิท","เมืองระยอง · เนินพระ"],
+ [5,19.999,"วิลล่าพร้อมสระ ทะเลสาบ และห้องปล่อยเช่า","เมืองระยอง · ทับมา"],
+ [10,24,"อาคารทรงไทย 429 ตร.ม.","แกลง · ชากพง"],
+ [23,61.9,"รีสอร์ตหาดแม่รำพึง 3,597 ตร.ม.","เมืองระยอง · เพ"],
+ [24,69,"โรงแรม 24 ห้อง เกาะเสม็ด (2 ดาว) ★","อ่าวลูกโยน · ห่างท่าเรือ 120 ม. · อาคาร 1,200 ตร.ม."],
+ [33,75,"รีสอร์ตติดหาด 120 เตียง (2-3-16.75 ไร่)","แกลง · อ่าวเจริญ ชากพง"],
+ [23,250,"กิจการรีสอร์ต ที่ดิน 30 ไร่","บ้านฉาง · ราคาขับด้วยมูลค่าที่ดิน ไม่ใช่จำนวนห้อง"],
+ ]},
+};
 
 function renderComps(r){
-  const withKey = COMPS.filter(c=>c[0]).map(c=>({rooms:c[0], mb:c[1], ppk:c[1]/c[0], name:c[2], loc:c[3]}))
-                        .sort((a,b)=>a.ppk-b.ppk);
+  const names = Object.keys(MARKETS);
+  if(!names.includes(A.market)) A.market = names[0];
+  const mk = MARKETS[A.market];
+  const withKey = mk.rows.filter(c=>c[0])
+        .map(c=>({rooms:c[0], mb:c[1], ppk:c[1]/c[0], name:c[2], loc:c[3]}))
+        .sort((a,b)=>a.ppk-b.ppk);
+  const noKey = mk.rows.filter(c=>!c[0]);
   const me = r.pricePerKey/1e6;
   const below = withKey.filter(c=>c.ppk < me).length;
+  const lo = withKey[0].ppk, hi = withKey[withKey.length-1].ppk;
+
+  document.getElementById("seg-market").innerHTML =
+    names.map(n=>`<button data-m="${n}" aria-pressed="${n===A.market}">${n}</button>`).join("");
+  document.getElementById("seg-market").onclick = e=>{
+    if(e.target.dataset.m){ A.market = e.target.dataset.m; render(); }
+  };
+
   document.getElementById("comps-me").innerHTML =
-    `<span>ดีลของคุณ <b class="num">${nf(me,2)}</b> ลบ./ห้อง — ${below} จาก ${withKey.length} ประกาศที่ระบุจำนวนห้องถูกกว่านี้
-     (ช่วงตลาด ${nf(withKey[0].ppk,2)}–${nf(withKey[withKey.length-1].ppk,2)} ลบ./ห้อง)</span>`;
+    `<span>ดีลของคุณ <b class="num">${nf(me,2)}</b> ลบ./ห้อง — ถูกกว่าดีลคุณ ${below} จาก ${withKey.length} ประกาศที่ระบุจำนวนห้อง
+     · ช่วงตลาดนี้ ${nf(lo,2)}–${nf(hi,2)} ลบ./ห้อง</span>`;
+
   document.getElementById("tbl-comps").innerHTML =
     `<thead><tr><th>ประกาศ</th><th>ทำเล</th><th>ห้อง</th><th>ราคา (ลบ.)</th><th>ลบ./ห้อง</th></tr></thead>
      <tbody>${withKey.map(c=>{
-       const near = Math.abs(c.ppk-me) < .35;
-       return `<tr class="${near?"em":""}"><td>${c.name}</td><td>${c.loc}</td>
+       const near = Math.abs(c.ppk-me) < Math.max(.35, me*.12);
+       return `<tr class="${near?"em":""}"><td>${c.name}</td><td class="wrap dim">${c.loc}</td>
          <td class="n">${c.rooms}</td><td class="n">${nf(c.mb,1)}</td><td class="n">${nf(c.ppk,2)}</td></tr>`;
      }).join("")}
-     ${COMPS.filter(c=>!c[0]).map(c=>`<tr><td>${c[2]}</td><td>${c[3]}</td><td class="n">—</td><td class="n">${nf(c[1],1)}</td><td class="n">—</td></tr>`).join("")}
+     ${noKey.map(c=>`<tr><td>${c[2]}</td><td class="wrap dim">${c[3]}</td>
+       <td class="n">—</td><td class="n">${nf(c[1],1)}</td><td class="n">—</td></tr>`).join("")}
      </tbody>`;
+
+  document.getElementById("comps-src").textContent = mk.src;
 }
 
 /* ============================ Due Diligence ============================ */
