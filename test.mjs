@@ -89,4 +89,37 @@ ok(calc({...D, terminalMode:"forward"}).exitNet > r.exitNet, "forward NOI -> ข
 ok(calc({...D, opexMode:"split"}).rows[0].ebitda < r.rows[0].ebitda,
    "โหมด split กด EBITDA ปีแรกลง (operating leverage ทำงาน)");
 
+// ---------- แท็บเทียบดีล ----------
+console.log("\n--- เทียบดีล ---");
+const js2 = html.split("<script>")[3].split("</script>")[0];
+const cmpSrc = js2.slice(js2.indexOf("const CMP_ROWS"), js2.indexOf("function renderCmp"));
+const {CMP_ROWS} = new Function("const pct=v=>v,nf=v=>v,xx=v=>v;" + cmpSrc + "; return {CMP_ROWS};")();
+
+const metrics = CMP_ROWS.filter(x => x[0] !== "sect");
+const marked  = metrics.filter(x => x[2]);
+const ABSOLUTE = ["ราคาเสนอขาย", "เงินลงทุนรวม", "รายได้รวม", "NOI ปีคงที่", "NPV", "เพดานราคา"];
+ok(metrics.length >= 14, `ตารางเทียบมี ${metrics.length} แถวตัวเลข`);
+ok(marked.length >= 6, `ติ๊ก ✓ ให้ ${marked.length} แถว`);
+ok(marked.every(x => !ABSOLUTE.some(a => x[0].includes(a))),
+   "ไม่ติ๊ก ✓ ให้ตัวเลขสัมบูรณ์ (โรงแรมใหญ่กว่าย่อมมากกว่าเสมอ)");
+ok(marked.some(x => x[0].includes("Yield on Cost")) && marked.some(x => x[0].includes("DSCR")),
+   "ติ๊ก ✓ ให้ตัวเลขที่หารขนาดออกแล้ว");
+ok(marked.every(x => x[2] === "high" || x[2] === "low"), "ทุกแถวที่ติ๊กระบุทิศทางชัดเจน");
+
+// ราคาต่ำกว่าเพดานต้องไม่พิมพ์เปอร์เซ็นต์ติดลบ
+const gapRow = metrics.find(x => x[0].includes("ส่วนต่างราคา"));
+ok(!!gapRow, "มีแถวส่วนต่างราคา");
+ok(gapRow && !String(gapRow[3](-1.718)).includes("-"), "ราคาต่ำกว่าเพดาน -> ไม่แสดงเปอร์เซ็นต์ติดลบ");
+ok(gapRow && String(gapRow[3](0.22)).includes("ต่อรองลง"), "ราคาสูงกว่าเพดาน -> บอกว่าต้องต่อรองลง");
+
+// เทียบ 3 ดีลจริงด้วยสมมติฐานชุดเดียวกัน
+const deals3 = [
+  {n:"หัวหิน 76 ห้อง 265 ลบ.",  price:265e6, rooms:76},
+  {n:"เกาะเสม็ด 24 ห้อง 69 ลบ.", price:69e6,  rooms:24},
+  {n:"เชียงใหม่ 42 ห้อง 42 ลบ.", price:42e6,  rooms:42},
+].map(d => ({...d, r: calc({...D, price:d.price, rooms:d.rooms})}));
+deals3.forEach(d => console.log(`      ${d.n.padEnd(26)} YoC ${(d.r.yoc*100).toFixed(1)}%  DSCR ${d.r.dscr1.toFixed(2)}`));
+ok(deals3[2].r.yoc > deals3[1].r.yoc && deals3[1].r.yoc > deals3[0].r.yoc,
+   "ราคาต่อห้องถูกกว่าที่สมมติฐานเดียวกัน -> YoC สูงกว่าตามลำดับ");
+
 console.log(process.exitCode ? "\n*** มีข้อที่ไม่ผ่าน ***" : "\nครบทุกข้อ ✓");

@@ -261,6 +261,18 @@ tbody tr:hover td{background:var(--sunken)}
 .legend i{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; vertical-align:middle}
 .note{font-size:12px; color:var(--ink-3); line-height:1.65; margin-top:11px}
 
+/* ===================== ตารางเทียบดีล ===================== */
+.cmp-pick{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:10px; margin-bottom:14px}
+.cmp-pick label{display:block; font-size:11.5px; color:var(--ink-3); margin-bottom:4px}
+.cmp-pick select{
+  width:100%; padding:6px 8px; border-radius:6px; border:1px solid var(--line-2);
+  background:var(--surface); font-size:12.5px; color:var(--ink-1);
+}
+td.best{background:var(--pass-bg); color:var(--pass); font-weight:600}
+td.best::after{content:" ✓"; font-weight:600}
+.cmp-head th{font-size:12.5px; color:var(--ink-1); font-weight:600; background:var(--sunken); white-space:normal; min-width:130px}
+tr.sect td{background:var(--sunken); font-weight:600; color:var(--ink-2); font-size:11.5px; letter-spacing:.03em}
+
 /* ===================== หน้าว่าง ===================== */
 .cta{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:22px}
 .cta h2{font-size:19px; margin-bottom:6px}
@@ -346,6 +358,7 @@ details.dd[open] summary::before{transform:rotate(90deg)}
   <div class="tabs-in" id="tabs" role="tablist">
     <button class="tab" role="tab" data-tab="sum">สรุปและต่อรอง</button>
     <button class="tab" role="tab" data-tab="model">ตรวจโมเดล</button>
+    <button class="tab" role="tab" data-tab="cmp">เทียบดีล</button>
     <button class="tab" role="tab" data-tab="ref">คลังอ้างอิง</button>
     <button class="tab" role="tab" data-tab="dd">เช็กลิสต์ DD<span class="cnt" id="dd-cnt"></span></button>
   </div>
@@ -362,6 +375,10 @@ details.dd[open] summary::before{transform:rotate(90deg)}
 
     <section class="panel" id="panel-model" hidden>
       <div id="model-body" style="display:flex;flex-direction:column;gap:18px"></div>
+    </section>
+
+    <section class="panel" id="panel-cmp" hidden>
+      <div id="cmp-body" style="display:flex;flex-direction:column;gap:18px"></div>
     </section>
 
     <section class="panel" id="panel-ref" hidden>
@@ -1019,7 +1036,7 @@ function renderCalcPanel(r){
 function setTab(t){
   tab = t;
   document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected", b.dataset.tab===t));
-  ["sum","model","ref","dd"].forEach(x=>{
+  ["sum","model","cmp","ref","dd"].forEach(x=>{
     document.getElementById("panel-"+x).hidden = x !== t;
   });
 }
@@ -1046,6 +1063,7 @@ function render(sync=true){
 
   renderSum(st, r);
   renderModel(st, r);
+  renderCmp();
   renderRef(st, r);
 }
 
@@ -1377,7 +1395,163 @@ function renderModel(st, r){
       </table></div></div>`;
 }
 
-/*---------- แท็บ 3: คลังอ้างอิง ----------*/
+/*---------- แท็บ 3: เทียบดีล ----------*/
+// สมมติฐานร่วม = เทียบแบบ like-for-like · สมมติฐานของแต่ละดีล = เคารพค่าที่บันทึกไว้
+let cmpSlots = [{type:"current"}, {type:"none"}, {type:"none"}];
+let cmpShared = true;
+
+function cmpOptions(){
+  const saved = Object.keys(deals() || {});
+  let html = `<option value='{"type":"none"}'>— ไม่เลือก —</option>
+    <option value='{"type":"current"}'>ดีลที่กำลังกรอกอยู่</option>`;
+  if(saved.length) html += `<optgroup label="ดีลที่บันทึกไว้">` +
+    saved.map(n=>`<option value='${esc(JSON.stringify({type:"saved",name:n}))}'>${esc(n)}</option>`).join("") + `</optgroup>`;
+  Object.entries(MARKETS).forEach(([mk, m])=>{
+    const rows = m.rows.map((r,i)=>[r,i]).filter(([r])=>r[0]);
+    html += `<optgroup label="ประกาศจริง — ${esc(mk)}">` + rows.map(([r,i])=>
+      `<option value='${esc(JSON.stringify({type:"listing",m:mk,i}))}'>${esc(r[2])} · ${r[0]} ห้อง · ${r[1]} ลบ.</option>`
+    ).join("") + `</optgroup>`;
+  });
+  return html;
+}
+
+// แปลงช่องที่เลือกเป็นชุดสมมติฐานเต็มชุดพร้อมผลคำนวณ
+function cmpResolve(slot){
+  if(!slot || slot.type === "none") return null;
+  const base = k => cmpShared ? A[k] : undefined;
+  let a = null, label = "";
+  if(slot.type === "current"){
+    if(!(A.price > 0 && A.rooms > 0)) return {label:"ดีลที่กำลังกรอกอยู่", a:null, r:null, note:"ยังกรอกไม่ครบ"};
+    a = {...A}; label = `ดีลของคุณ · ${nf(A.rooms)} ห้อง`;
+  } else if(slot.type === "saved"){
+    const d = (deals() || {})[slot.name];
+    if(!d) return null;
+    a = cmpShared ? {...A, price:d.price, rooms:d.rooms, adr:d.adr} : {...d};
+    label = slot.name;
+  } else {
+    const row = (MARKETS[slot.m] || {rows:[]}).rows[slot.i];
+    if(!row) return null;
+    a = {...A, price:row[1]*1e6, rooms:row[0]};
+    label = row[2];
+  }
+  if(!(a.price > 0 && a.rooms > 0)) return {label, a, r:null, note:"ข้อมูลไม่พอ"};
+  if(!(a.adr > 0)) return {label, a, r:null, note:"ยังไม่มี ADR"};
+  const r = calc(a);
+  const caps = maxPrice(a).filter(c=>c.p !== null);
+  const cap = caps.length ? Math.min(...caps.map(c=>c.p)) : null;
+  const tests = liveTests(a).map(t=>{
+    const v = t.get(r);
+    return isFinite(v) && +v.toFixed(t.prec) >= t.tv(a);
+  });
+  return {label, a, r, cap, gap: cap === null ? NaN : (a.price - cap)/a.price,
+          passed: tests.filter(Boolean).length, total: tests.length};
+}
+
+const CMP_ROWS = [
+  ["sect", "ข้อมูลดีล"],
+  ["ราคาเสนอขาย (ลบ.)",        d=>d.a.price/1e6,          null,   v=>nf(v,1)],
+  ["จำนวนห้อง",                d=>d.a.rooms,              null,   v=>nf(v)],
+  ["ราคาต่อห้อง (ลบ.)",         d=>d.a.price/d.a.rooms/1e6, "low", v=>nf(v,2)],
+  ["ADR ปีแรก (บาท)",          d=>d.a.adr,                null,   v=>nf(v)],
+  ["sect", "ผลการดำเนินงาน"],
+  ["เงินลงทุนรวม (ลบ.)",        d=>d.r.tc/1e6,             null,   v=>nf(v,1)],
+  ["รายได้รวมปีคงที่ (ลบ.)",     d=>d.r.stab.rev/1e6,       null,   v=>nf(v,1)],
+  ["NOI ปีคงที่ (ลบ.)",         d=>d.r.noiStab/1e6,        null,   v=>nf(v,2)],
+  ["sect", "ผลตอบแทน"],
+  ["Yield on Cost",            d=>d.r.yoc,                "high", v=>pct(v)],
+  ["Going-in Yield",           d=>d.r.goingIn,            "high", v=>pct(v)],
+  ["DSCR ปี 1",                d=>d.r.dscr1,              "high", v=>xx(v)],
+  ["Levered IRR",              d=>d.r.irrL,               "high", v=>pct(v)],
+  ["Unlevered IRR",            d=>d.r.irrU,               "high", v=>pct(v)],
+  ["Equity Multiple",          d=>d.r.em,                 "high", v=>xx(v)],
+  ["NPV ผู้ถือหุ้น (ลบ.)",       d=>d.r.npvL/1e6,           null,   v=>nf(v,1)],
+  ["sect", "การต่อรอง"],
+  ["เพดานราคาที่ผ่านทุกเกณฑ์ (ลบ.)", d=>d.cap/1e6,          null,   v=>nf(v,1)],
+  ["ส่วนต่างราคา เทียบเพดาน",     d=>d.gap,                  "low",
+   v=> v > 0.0005 ? "ต่อรองลง " + pct(v)
+     : v < -0.0005 ? "ต่ำกว่าเพดาน " + pct(-v)
+     : "พอดีเพดาน"],
+];
+
+function renderCmp(){
+  const el = document.getElementById("cmp-body");
+  const cols = cmpSlots.map(cmpResolve);
+  const live = cols.filter(c=>c && c.r);
+
+  const pickers = `<div class="cmp-pick">${cmpSlots.map((sl,i)=>`
+    <div><label for="cmp-${i}">คอลัมน์ ${i+1}</label>
+      <select id="cmp-${i}" data-cmp="${i}">${cmpOptions()}</select></div>`).join("")}</div>
+    <div class="seg" id="seg-cmpmode" style="max-width:460px">
+      <button data-v="shared" aria-pressed="${cmpShared}">สมมติฐานชุดเดียวกันทุกคอลัมน์</button>
+      <button data-v="own" aria-pressed="${!cmpShared}">ใช้สมมติฐานที่บันทึกกับแต่ละดีล</button>
+    </div>
+    <p class="note">${cmpShared
+      ? "ทุกคอลัมน์ใช้สมมติฐานชุดที่คุณกรอกอยู่ (Occupancy, ต้นทุน, เงินกู้, exit cap) ต่างกันแค่ราคา จำนวนห้อง และ ADR — เทียบได้ตรง ๆ ว่าดีลไหนคุ้มกว่าที่เงื่อนไขเดียวกัน"
+      : "แต่ละคอลัมน์ใช้สมมติฐานที่บันทึกไว้กับดีลนั้น — เหมาะเมื่ออาคารเก่ากับใหม่มีโครงสร้างต้นทุนต่างกันจริง (ประกาศจากคลังข้อมูลยังใช้สมมติฐานปัจจุบันเพราะไม่มีค่าของตัวเอง)"}</p>`;
+
+  if(live.length < 2){
+    el.innerHTML = `<div class="card"><div class="card-h"><h2>เทียบดีล</h2>
+      <p>วางดีลข้างกันเพื่อดูว่าอันไหนคุ้มกว่าที่เงื่อนไขเดียวกัน</p></div>
+      <div class="card-b">${pickers}
+        <div class="ghostbox" style="margin-top:14px"><h3>เลือกอย่างน้อย 2 คอลัมน์</h3>
+          <p>เลือกได้จากดีลที่กำลังกรอก ดีลที่บันทึกไว้ หรือ<b>ประกาศขายจริง 58 รายการ</b>ในคลังข้อมูล
+             (หัวหิน · ระยอง–เกาะเสม็ด · ภาคเหนือ) — ประกาศจะถูกคำนวณด้วยสมมติฐานปัจจุบันของคุณทันที
+             ${cols.some(c=>c && !c.r) ? `<br><br>คอลัมน์ที่ยังใช้ไม่ได้: ${cols.filter(c=>c&&!c.r).map(c=>esc(c.label)+" ("+esc(c.note||"ข้อมูลไม่พอ")+")").join(" · ")}` : ""}</p>
+        </div></div></div>`;
+    wireCmp(); return;
+  }
+
+  const best = (fn, dir) => {
+    if(!dir) return null;
+    const vals = live.map(c=>{ try{ return fn(c); }catch(e){ return NaN; } }).filter(isFinite);
+    if(!vals.length) return null;
+    return dir === "high" ? Math.max(...vals) : Math.min(...vals);
+  };
+
+  el.innerHTML = `<div class="card"><div class="card-h"><h2>เทียบดีล</h2>
+      <p>เกณฑ์ตัดสินใช้ชุดเดียวกันทุกคอลัมน์ · ✓ = ดีที่สุดในแถวนั้น — ติ๊กเฉพาะตัวเลขที่หารขนาดออกแล้ว ไม่ติ๊กตัวเลขสัมบูรณ์เพราะโรงแรมใหญ่กว่าย่อมมากกว่าเสมอ</p></div>
+    <div class="card-b">${pickers}
+      <div class="scroll" style="margin-top:14px"><table>
+        <thead><tr class="cmp-head"><th>รายการ</th>
+          ${live.map(c=>`<th>${esc(c.label)}</th>`).join("")}</tr></thead>
+        <tbody>
+          <tr class="em"><td>ผ่านเกณฑ์</td>${live.map(c=>{
+            const g = c.passed === c.total ? "pass" : c.passed >= c.total-1 ? "warn" : "fail";
+            return `<td class="n" style="color:var(--${g})">${SIGN[g]} ${c.passed}/${c.total} ข้อ</td>`;
+          }).join("")}</tr>
+          ${CMP_ROWS.map(row=>{
+            if(row[0] === "sect") return `<tr class="sect"><td colspan="${live.length+1}">${row[1]}</td></tr>`;
+            const [lab, fn, dir, fmt] = row;
+            const b = best(fn, dir);
+            return `<tr><td>${lab}</td>${live.map(c=>{
+              let v; try{ v = fn(c); }catch(e){ v = NaN; }
+              const isBest = dir && isFinite(v) && b !== null && Math.abs(v-b) < 1e-9 && live.length > 1;
+              return `<td class="n${isBest?" best":""}">${isFinite(v) ? fmt(v) : "—"}</td>`;
+            }).join("")}</tr>`;
+          }).join("")}
+        </tbody></table></div>
+      ${cols.some(c=>c && !c.r) ? `<p class="note">คอลัมน์ที่ยังคำนวณไม่ได้: ${
+        cols.filter(c=>c&&!c.r).map(c=>esc(c.label)+" — "+esc(c.note||"ข้อมูลไม่พอ")).join(" · ")}</p>` : ""}
+      <p class="note">ราคาต่อห้องที่ถูกกว่าไม่ได้แปลว่าดีลดีกว่าเสมอ — ดูที่ Yield on Cost กับ DSCR ซึ่งรวมผลของรายได้และต้นทุนแล้ว
+        ประกาศจากคลังข้อมูลใช้ ADR และ Occupancy ชุดเดียวกับดีลของคุณ ซึ่งอาจไม่ตรงกับทำเลนั้นจริง</p>
+    </div></div>`;
+  wireCmp();
+}
+
+function wireCmp(){
+  cmpSlots.forEach((sl,i)=>{
+    const el = document.getElementById("cmp-"+i);
+    if(!el) return;
+    el.value = JSON.stringify(sl);
+    if(el.selectedIndex < 0) el.value = '{"type":"none"}';
+    el.onchange = e=>{ try{ cmpSlots[i] = JSON.parse(e.target.value); }catch(err){ cmpSlots[i] = {type:"none"}; }
+      renderCmp(); writeHash(); };
+  });
+  const seg = document.getElementById("seg-cmpmode");
+  if(seg) seg.onclick = e=>{ if(e.target.dataset.v){ cmpShared = e.target.dataset.v === "shared"; renderCmp(); writeHash(); } };
+}
+
+/*---------- แท็บ 4: คลังอ้างอิง ----------*/
 function renderRef(st, r){
   const names = Object.keys(MARKETS);
   if(!names.includes(A.market)) A.market = names[0];
@@ -1495,7 +1669,7 @@ function clearDeal(ask=true){
 const enc = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/=+$/,"");
 const dec = s => JSON.parse(decodeURIComponent(escape(s)));
 function writeHash(){
-  const payload = {t:tab, m:demoMode?1:0, v:A};
+  const payload = {t:tab, m:demoMode?1:0, v:A, c:cmpSlots, cs:cmpShared?1:0};
   history.replaceState(null, "", "#d=" + enc(payload));
 }
 function readHash(){
@@ -1505,7 +1679,9 @@ function readHash(){
     const p = dec(atob(m[1]));
     A = {...EMPTY(), ...(p.v||{})};
     setDemo(!!p.m);
-    if(["sum","model","ref","dd"].includes(p.t)) tab = p.t;
+    if(["sum","model","cmp","ref","dd"].includes(p.t)) tab = p.t;
+    if(Array.isArray(p.c) && p.c.length === 3) cmpSlots = p.c;
+    if(p.cs !== undefined) cmpShared = !!p.cs;
     return true;
   }catch(e){ return false; }
 }
