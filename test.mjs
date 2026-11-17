@@ -3,8 +3,8 @@ import {readFileSync} from "node:fs";
 const html = readFileSync(new URL("./index.html", import.meta.url), "utf8");
 const js   = html.split("<script>")[1].split("</script>")[0];
 const src  = js.slice(0, js.indexOf("/*==================== แถบกรอก"));
-const {MARKET, EMPTY, DEMO, FIELDS, DEAL_KEYS, calc, pmt, irr, npv, maxPrice, requiredADR, TESTS} =
-  new Function(src + `; return {MARKET, EMPTY, DEMO, FIELDS, DEAL_KEYS, calc, pmt, irr, npv, maxPrice, requiredADR, TESTS};`)();
+const {MARKET, EMPTY, DEMO, FIELDS, DEAL_KEYS, calc, pmt, irr, npv, maxPrice, requiredADR, TESTS, screenDeal, dealA} =
+  new Function(src + `; return {MARKET, EMPTY, DEMO, FIELDS, DEAL_KEYS, calc, pmt, irr, npv, maxPrice, requiredADR, TESTS, screenDeal, dealA};`)();
 import assert from "node:assert";
 
 const near = (a, b, tol, msg) => {
@@ -121,5 +121,24 @@ const deals3 = [
 deals3.forEach(d => console.log(`      ${d.n.padEnd(26)} YoC ${(d.r.yoc*100).toFixed(1)}%  DSCR ${d.r.dscr1.toFixed(2)}`));
 ok(deals3[2].r.yoc > deals3[1].r.yoc && deals3[1].r.yoc > deals3[0].r.yoc,
    "ราคาต่อห้องถูกกว่าที่สมมติฐานเดียวกัน -> YoC สูงกว่าตามลำดับ");
+
+// ---------- หน้ารายการ: คัดกรองจาก 4 ช่อง ----------
+console.log("\n--- คัดกรองดีลแบบย่อ ---");
+const hh = screenDeal({priceM:265, rooms:76, adr:2200, occ:65});
+near(hh.fair/1e6, 221.7, 0.5, "หัวหิน: มูลค่าตามรายได้ = NOI ÷ 8% ~221.7 ลบ.");
+near(hh.worth/1e6, 206.6, 0.5, "หัวหิน: ราคาสูงสุดที่ยังคุ้ม ~206.6 ลบ. (ตรงกับหน้ารายละเอียด)");
+ok(hh.lo < hh.fair && hh.fair < hh.hi, "ช่วงสมเหตุผลครอบมูลค่ากลาง");
+ok(hh.price.g === "fail" && hh.buy.g === "fail", "หัวหิน 265 ลบ.: ตั้งราคาสูงเกินไป และยังไม่คุ้ม");
+const cheap = screenDeal({priceM:200, rooms:76, adr:2200, occ:65});
+ok(cheap.price.g === "pass" && cheap.buy.g === "pass" && cheap.passed === cheap.total, "ราคาเดียวกันที่ 200 ลบ.: สมเหตุผลและคุ้ม");
+ok(screenDeal({priceM:230, rooms:76, adr:2200, occ:65}).price.g !== "fail", "230 ลบ. อยู่ในช่วง ไม่ถูกตัดสินว่าสูงเกินไป");
+ok(screenDeal({priceM:null, rooms:76}).state === "empty", "ยังไม่กรอกราคา -> ไม่คำนวณ");
+const na = screenDeal({priceM:69, rooms:24, adr:null, occ:null});
+ok(na.state === "noadr" && na.need > 1500 && na.need < 3500, "ไม่รู้ราคาห้อง -> บอกราคาห้องที่ต้องทำได้ (" + Math.round(na.need) + " บาท)");
+ok(dealA({priceM:100, rooms:10, adr:1000, occ:null}).occ3 === MARKET.occ3, "ไม่กรอกอัตราเข้าพัก -> ใช้ค่าตลาด");
+
+const cm = screenDeal({priceM:42, rooms:42, adr:null, occ:null});
+ok(cm.state === "noadr" && cm.need > 500 && cm.need < 1500,
+   "โรงแรมราคาถูกที่ไม่รู้ราคาห้อง ต้องได้คำตอบ ไม่ใช่ 'ไม่คุ้มทุกกรณี' (" + Math.round(cm.need) + " บาท)");
 
 console.log(process.exitCode ? "\n*** มีข้อที่ไม่ผ่าน ***" : "\nครบทุกข้อ ✓");

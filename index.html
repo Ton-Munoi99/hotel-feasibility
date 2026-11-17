@@ -479,6 +479,59 @@ html{scroll-padding-top:calc(var(--h1,46px) + var(--h2,0px) + var(--h3,43px) + 1
 .col .cap{background:var(--surface); padding:0 3px 1px; margin-bottom:3px; border-radius:3px; z-index:1}
 @media (max-width:720px){ .top,.demobar{position:static} }
 @media print{ .tip{display:none !important} .col .bar{print-color-adjust:exact} }
+/* ===================== หน้ารายการโรงแรม (หน้าแรก) ===================== */
+body.listmode .rail, body.listmode .tabs, body.listmode .demobar{display:none !important}
+body.listmode .wrap{grid-template-columns:1fr; max-width:1080px}
+body.listmode .tgroup:not(:last-child), body.listmode #btn-clear{display:none}
+#btn-back{color:var(--accent); font-weight:600; border-right:1px solid var(--line); margin-right:6px}
+.l-head h2{font-size:22px; margin-bottom:6px}
+.l-head p{font-size:14px; color:var(--ink-2); max-width:70ch}
+.l-actions{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:14px}
+.l-actions select{min-height:32px; padding:5px 8px; border-radius:6px; border:1px solid var(--line-2);
+  background:var(--surface); color:var(--ink-1); font-size:12.5px; max-width:300px}
+.deal{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow)}
+.d-in{display:grid; grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(0,1fr)) auto; gap:10px; padding:14px 16px;
+  align-items:end; border-bottom:1px solid var(--line)}
+.d-in label{display:block; font-size:11.5px; color:var(--ink-3); margin-bottom:3px; white-space:nowrap}
+.d-in input{width:100%; min-height:36px; padding:6px 9px; border-radius:6px; border:1px solid var(--line-2);
+  border-bottom-width:2px; background:var(--surface); color:var(--accent); font-weight:500; font-size:14px}
+.d-in input.numi{text-align:right; font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+.d-in input.d-name{color:var(--ink-1); font-weight:600}
+.d-in input:focus{border-color:var(--accent); background:var(--accent-soft)}
+.d-in input::placeholder{color:var(--ink-3); font-weight:400; opacity:.75}
+.d-del{border:0; background:transparent; color:var(--ink-3); cursor:pointer; min-height:36px; padding:0 6px; border-radius:6px}
+.d-del:hover{color:var(--fail); background:var(--fail-bg)}
+.d-del svg{width:16px; height:16px; display:block}
+.d-out{padding:14px 16px}
+.d-out .hint{font-size:13px; color:var(--ink-3)}
+.qa{display:grid; grid-template-columns:1fr 1fr; gap:18px 28px}
+.q h3{font-size:12px; font-weight:500; color:var(--ink-3); margin-bottom:6px}
+.q .ans{display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:16px; font-weight:600; margin-bottom:6px}
+.q .ans .chip{font-size:13px; padding:3px 11px}
+.q p{font-size:13px; color:var(--ink-2); line-height:1.65}
+.q p b{color:var(--ink-1); font-weight:600}
+.band{position:relative; height:44px; margin:10px 0 2px}
+.band .trk{position:absolute; left:0; right:0; top:20px; height:8px; border-radius:8px; background:var(--sunken)}
+.band .ok{position:absolute; top:20px; height:8px; border-radius:8px; background:var(--pass)}
+.band .ask{position:absolute; top:14px; width:3px; height:20px; background:var(--ink-1); border-radius:2px; transform:translateX(-50%)}
+.band .lb{position:absolute; font-size:11px; color:var(--ink-3); white-space:nowrap; line-height:1.3}
+.band .lb.top{top:-2px; color:var(--ink-1); font-weight:600}
+.band .lb.bot{top:31px}
+.d-foot{display:flex; gap:10px 18px; flex-wrap:wrap; align-items:center; margin-top:12px; padding-top:10px;
+  border-top:1px solid var(--line); font-size:12px; color:var(--ink-3)}
+.d-foot .btn{margin-left:auto}
+.assume{font-size:12.5px; color:var(--ink-2)}
+.assume summary{cursor:pointer; color:var(--accent); font-weight:500; padding:4px 0}
+.assume ul{margin:8px 0 0; padding-left:18px; line-height:1.8}
+@media (max-width:860px){
+  .d-in{grid-template-columns:1fr 1fr}
+  .d-in .nm{grid-column:1/-1}
+  .d-in .d-del{position:absolute; right:8px; top:8px}
+  .deal{position:relative}
+  .d-in .nm{padding-right:34px}
+  .qa{grid-template-columns:1fr}
+  .d-in input{font-size:16px}
+}
 </style>
 <!--A2-->
 </head>
@@ -520,6 +573,7 @@ html{scroll-padding-top:calc(var(--h1,46px) + var(--h2,0px) + var(--h3,43px) + 1
 
 <nav class="tabs">
   <div class="tabs-in" id="tabs" role="tablist">
+    <button class="tab" id="btn-back" data-tab="list">‹ รายการโรงแรม</button>
     <button class="tab" role="tab" data-tab="sum">สรุปและต่อรอง</button>
     <button class="tab" role="tab" data-tab="model">ตรวจโมเดล</button>
     <button class="tab" role="tab" data-tab="cmp">เทียบดีล</button>
@@ -532,6 +586,10 @@ html{scroll-padding-top:calc(var(--h1,46px) + var(--h2,0px) + var(--h3,43px) + 1
   <aside class="rail" id="rail"></aside>
   <main class="stage">
     <div class="printonly" id="print-head"></div>
+
+    <section class="panel" id="panel-list" hidden>
+      <div id="list-body" style="display:flex;flex-direction:column;gap:14px"></div>
+    </section>
 
     <section class="panel" id="panel-sum">
       <div id="sum-body" style="display:flex;flex-direction:column;gap:18px"></div>
@@ -613,7 +671,7 @@ const DEMO = {
 };
 
 let A = EMPTY();
-let demoMode = false, demoTouched = 0, tab = "sum";
+let demoMode = false, demoTouched = 0, tab = "list";
 
 /*==================== ช่องกรอก ====================*/
 // layer: deal = ตัวตนของดีล ต้องว่างตอนเริ่ม · assume = สมมติฐานตลาด มีค่าตั้งต้น
@@ -843,6 +901,8 @@ function requiredADR(a){
     const target = t.tv(a);
     const g = ad => { const v = t.get(calc({...a, adr:ad})); return isFinite(v) ? v : -1e12; };
     let lo = 50, hi = 60000;
+    // ดีลราคาถูก + ราคาห้องสูงมาก ทำให้ IRR ทะลุช่วงที่หาได้ (NaN) — ถอยเพดานลงจนคำนวณได้ก่อนตัดสิน
+    while(hi > 400 && !isFinite(t.get(calc({...a, adr:hi})))) hi /= 2;
     if(g(hi) < target) return {t, adr:null};
     if(g(lo) >= target) return {t, adr:lo};
     for(let i=0;i<60;i++){ const mid=(lo+hi)/2; if(g(mid) >= target) hi=mid; else lo=mid; }
@@ -1058,6 +1118,40 @@ const GUIDE = [
   "ทำข้อเสนอแบบมีเงื่อนไข ไม่ตัดสินจาก Base Case อย่างเดียว","การ์ดราคาสูงสุดที่ควรจ่าย"],
 ];
 
+/*==================== คัดกรองดีลแบบย่อ (หน้ารายการ) ====================*/
+// ผู้ใช้กรอก 4 ช่อง: ราคา (ล้านบาท) · ห้อง · ราคาห้องเฉลี่ย · อัตราเข้าพัก — ที่เหลือใช้สมมติฐานตลาด
+function dealA(d){
+  const occ = (d.occ > 0 ? d.occ : MARKET.occ3*100)/100;
+  return {...MARKET, price:d.priceM*1e6, rooms:d.rooms, adr:d.adr,
+          occ3:occ, occ2:Math.max(.05, occ-.03), occ1:Math.max(.05, occ-.07)};
+}
+// คำถาม 1: ผู้ขายตั้งราคาสมเหตุผลไหม -> มูลค่าตามรายได้ = NOI ปีคงที่ ÷ อัตราผลตอบแทนตลาด (±1 จุด เป็นช่วง)
+// คำถาม 2: ซื้อราคานี้คุ้มไหม      -> ผ่านเกณฑ์ลงทุนครบไหม และราคาสูงสุดที่ยังผ่านคือเท่าไร
+function screenDeal(d){
+  if(!(d.priceM > 0 && d.rooms > 0)) return {state:"empty"};
+  const a = dealA(d), ppk = d.priceM/d.rooms;
+  if(!(d.adr > 0)){
+    const need = requiredADR({...a, adr:2000}).map(x=>x.adr);
+    return {state:"noadr", ppk, occ:a.occ3, need: need.includes(null) ? null : Math.max(...need)};
+  }
+  const r = calc(a), cap = MARKET.exitCap, ask = a.price;
+  const fair = r.noiStab/cap, lo = r.noiStab/(cap+.01), hi = r.noiStab/(cap-.01);
+  const caps = maxPrice(a), okc = caps.filter(c=>c.p !== null);
+  const worth = okc.length && okc.length === caps.length ? Math.min(...okc.map(c=>c.p)) : null;
+  const passed = liveTests(a).filter(t=>{ const v = t.get(r); return isFinite(v) && +v.toFixed(t.prec) >= t.tv(a); }).length;
+  const total = liveTests(a).length;
+  const price = r.noiStab <= 0 ? {g:"fail", t:"กิจการขาดทุนที่ตัวเลขนี้"}
+    : ask > hi          ? {g:"fail", t:"ตั้งราคาสูงเกินไป"}
+    : ask > fair*1.05   ? {g:"warn", t:"ค่อนข้างแพง ยังต่อรองได้"}
+    : ask >= lo         ? {g:"pass", t:"ราคาสมเหตุผล"}
+    :                     {g:"pass", t:"ราคาต่ำกว่ามูลค่า"};
+  const buy = passed === total ? {g:"pass", t:"คุ้ม"}
+    : worth !== null && worth >= ask*0.9 ? {g:"warn", t:"เกือบคุ้ม ต้องต่อรอง"}
+    : {g:"fail", t:"ยังไม่คุ้มที่ราคานี้"};
+  return {state:"full", a, r, ppk, ask, fair, lo, hi, worth, passed, total, price, buy,
+          rule:[a.adr*800*a.rooms, a.adr*1000*a.rooms]};
+}
+
 /*==================== แถบกรอก ====================*/
 function railHTML(){
   const fld = f => {
@@ -1216,11 +1310,17 @@ function renderCalcPanel(r){
 
 /*==================== แท็บ ====================*/
 function setTab(t){
+  if(t === "list" && tab !== "list" && typeof saveBack === "function") saveBack();
   tab = t;
+  document.body.classList.toggle("listmode", t === "list");
   document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected", b.dataset.tab===t));
-  ["sum","model","cmp","ref","dd"].forEach(x=>{
+  ["list","sum","model","cmp","ref","dd"].forEach(x=>{
     document.getElementById("panel-"+x).hidden = x !== t;
   });
+  if(t === "list" && typeof renderList === "function") renderList();
+  if(typeof syncChrome === "function") syncChrome();
+  const dn = document.getElementById("deal-name");
+  if(dn && t === "list") dn.textContent = "คัดกรองโรงแรมที่กำลังพิจารณา";
 }
 document.getElementById("tabs").addEventListener("click", e=>{
   if(e.target.dataset.tab){ setTab(e.target.dataset.tab); writeHash(); }
@@ -1236,7 +1336,8 @@ function render(sync=true){
   refreshRailChrome();
   renderCalcPanel(st.full ? r : null);
   document.getElementById("deal-name").textContent =
-    demoMode ? DEMO.name
+    tab === "list" ? "คัดกรองโรงแรมที่กำลังพิจารณา"
+    : demoMode ? DEMO.name
     : st.core ? `${nf(A.rooms)} ห้อง · ${nf(A.price/1e6,1)} ลบ.`
     : "ยังไม่มีข้อมูล";
   document.getElementById("print-head").innerHTML =
@@ -1974,7 +2075,7 @@ function readHash(){
     const p = dec(atob(m[1]));
     A = {...EMPTY(), ...(p.v||{})};
     setDemo(!!p.m);
-    if(["sum","model","cmp","ref","dd"].includes(p.t)) tab = p.t;
+    if(["list","sum","model","cmp","ref","dd"].includes(p.t)) tab = p.t;
     if(Array.isArray(p.c) && p.c.length === 3) cmpSlots = p.c;
     if(p.cs !== undefined) cmpShared = !!p.cs;
     return true;
@@ -2041,7 +2142,164 @@ window.addEventListener("beforeprint", ()=>{
 });
 window.addEventListener("afterprint", ()=>{ printOpened.forEach(d=>d.open = false); printOpened = []; });
 
+/*==================== หน้ารายการโรงแรม ====================*/
+let LIST = [], currentId = null;
+function listStore(v){
+  try{
+    if(v === undefined) return JSON.parse(localStorage.getItem("hf.list") || "[]");
+    localStorage.setItem("hf.list", JSON.stringify(v));
+  }catch(e){ return []; }
+  return v;
+}
+const numOrNull = v => { const n = parseFloat(String(v).replace(/[, ]/g,"")); return isFinite(n) && n > 0 ? n : null; };
+const newId = () => "d" + (LIST.reduce((m,d)=>Math.max(m, +String(d.id).slice(1) || 0), 0) + 1);
+const TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
+
+function dealOutHTML(d){
+  const sc = screenDeal(d);
+  if(sc.state === "empty") return `<p class="hint">กรอกราคาเสนอขายและจำนวนห้องเพื่อเริ่มคำนวณ</p>`;
+  if(sc.state === "noadr") return `
+    <div class="q"><h3>ยังไม่รู้ราคาห้องเฉลี่ย — คำนวณย้อนกลับให้</h3>
+      <div class="ans">${sc.need ? `ต้องขายห้องได้เฉลี่ย ${nf(sc.need)} บาท/คืนขึ้นไป` : "ราคานี้ไม่คุ้มไม่ว่าจะขายห้องได้เท่าไร"}</div>
+      <p>ที่อัตราเข้าพัก ${pct(sc.occ,0)} ราคานี้ถึงจะคุ้ม · เปิดดูราคาห้องจริงของโรงแรมนี้ใน Agoda หรือ Booking
+        ถ้าต่ำกว่านี้แปลว่าตั้งราคาแพงไป · ราคาต่อห้อง <b>${nf(sc.ppk,2)} ลบ.</b></p></div>`;
+
+  const m = v => nf(v/1e6, v < 1e8 ? 1 : 0);
+  const over = sc.ask/sc.fair - 1;
+  const d0 = Math.min(sc.lo, sc.ask)*0.9, d1 = Math.max(sc.hi, sc.ask)*1.08;
+  const x = v => Math.max(0, Math.min(100, (v-d0)/(d1-d0)*100));
+  const askSide = x(sc.ask) > 70 ? "right:" + (100-x(sc.ask)) + "%" : "left:" + x(sc.ask) + "%";
+  const priceLine = sc.r.noiStab <= 0
+    ? `ที่ราคาห้องและอัตราเข้าพักนี้ รายได้ไม่พอค่าใช้จ่าย จึงตีมูลค่าจากรายได้ไม่ได้`
+    : `มูลค่าตามรายได้ประมาณ <b>${m(sc.fair)} ลบ.</b> (ช่วง ${m(sc.lo)}–${m(sc.hi)}) ·
+       ราคาที่ตั้ง ${over >= 0 ? "สูงกว่า" : "ต่ำกว่า"} <b>${pct(Math.abs(over),0)}</b>`;
+  const buyLine = sc.passed === sc.total
+    ? `ผ่านเกณฑ์ลงทุนครบ ${sc.total} ข้อ · ราคาสูงสุดที่ยังคุ้มคือ <b>${m(sc.worth)} ลบ.</b>`
+    : sc.worth === null ? `ผ่าน ${sc.passed} จาก ${sc.total} เกณฑ์ · ไม่มีราคาใดที่ทำให้คุ้มได้ ปัญหาอยู่ที่รายได้ ไม่ใช่ราคา`
+    : `ผ่าน ${sc.passed} จาก ${sc.total} เกณฑ์ · จะคุ้มเมื่อซื้อได้ไม่เกิน <b>${m(sc.worth)} ลบ.</b>
+       (ต่อรองลง ${pct(1 - sc.worth/sc.ask,0)})`;
+
+  return `<div class="qa">
+    <div class="q"><h3>ผู้ขายตั้งราคาสมเหตุผลไหม</h3>
+      <div class="ans"><span class="chip ${sc.price.g}">${SIGN[sc.price.g]} ${sc.price.t}</span></div>
+      <p>${priceLine}</p>
+      ${sc.r.noiStab > 0 ? `<div class="band" aria-hidden="true">
+        <div class="trk"></div>
+        <div class="ok" style="left:${x(sc.lo)}%;width:${x(sc.hi)-x(sc.lo)}%"></div>
+        <div class="ask" style="left:${x(sc.ask)}%"></div>
+        <span class="lb top" style="${askSide}">ราคาที่ตั้ง ${m(sc.ask)}</span>
+        <span class="lb bot" style="left:${x(sc.lo)}%">ช่วงสมเหตุผล ${m(sc.lo)}–${m(sc.hi)} ลบ.</span>
+      </div>` : ""}
+    </div>
+    <div class="q"><h3>ซื้อราคานี้คุ้มไหม</h3>
+      <div class="ans"><span class="chip ${sc.buy.g}">${SIGN[sc.buy.g]} ${sc.buy.t}</span></div>
+      <p>${buyLine}</p>
+      <p>กำไรจากการดำเนินงาน <b>${mb(sc.r.noiStab)} ลบ./ปี</b> คิดเป็น <b>${pct(sc.r.yoc)}</b> ของเงินลงทุน (เป้า ${pct(sc.a.targetYoC)})
+        ${sc.r.hasDebt ? ` · พอจ่ายหนี้ปีแรก <b>${xx(sc.r.dscr1)}</b> (ควรได้ ${xx(sc.a.minDSCR)})` : ""}</p>
+    </div>
+  </div>
+  <div class="d-foot">
+    <span>ราคาต่อห้อง ${nf(sc.ppk,2)} ลบ.</span>
+    <span>เช็กคร่าว ๆ ด้วยกฎ ราคาห้อง × 800–1,000 ต่อห้อง: ${m(sc.rule[0])}–${m(sc.rule[1])} ลบ.</span>
+    <button class="btn" data-open="${d.id}">ดูรายละเอียดและปรับสมมติฐาน</button>
+  </div>`;
+}
+
+function dealCardHTML(d){
+  const v = x => x === null || x === undefined ? "" : esc(x);
+  return `<div class="deal" data-id="${d.id}">
+    <div class="d-in">
+      <div class="nm"><label for="${d.id}-name">ชื่อโรงแรม / ทำเล</label>
+        <input class="d-name" id="${d.id}-name" data-f="name" value="${v(d.name)}" placeholder="เช่น โรงแรม 76 ห้อง หัวหิน"></div>
+      <div><label for="${d.id}-p">ราคาเสนอขาย (ล้านบาท)</label>
+        <input class="numi" id="${d.id}-p" data-f="priceM" inputmode="decimal" value="${v(d.priceM)}" placeholder="265"></div>
+      <div><label for="${d.id}-r">จำนวนห้อง</label>
+        <input class="numi" id="${d.id}-r" data-f="rooms" inputmode="numeric" value="${v(d.rooms)}" placeholder="76"></div>
+      <div><label for="${d.id}-a">ราคาห้องเฉลี่ย (บาท/คืน)</label>
+        <input class="numi" id="${d.id}-a" data-f="adr" inputmode="decimal" value="${v(d.adr)}" placeholder="ไม่รู้เว้นได้"></div>
+      <div><label for="${d.id}-o">อัตราเข้าพัก (%)</label>
+        <input class="numi" id="${d.id}-o" data-f="occ" inputmode="decimal" value="${v(d.occ)}" placeholder="65"></div>
+      <button class="d-del" data-del="${d.id}" title="ลบรายการนี้" aria-label="ลบรายการนี้">${TRASH}</button>
+    </div>
+    <div class="d-out">${dealOutHTML(d)}</div>
+  </div>`;
+}
+
+function renderList(){
+  const el = document.getElementById("list-body");
+  el.innerHTML = `
+    <div class="cta l-head">
+      <h2>โรงแรมนี้ตั้งราคาสมเหตุผลไหม ซื้อแล้วคุ้มหรือเปล่า</h2>
+      <p>ใส่โรงแรมที่กำลังดูอยู่ทีละแห่ง กรอกแค่ 4 ช่องจากประกาศขาย แล้วดูคำตอบได้ทันที เพิ่มได้หลายแห่งเพื่อเทียบกัน</p>
+      <div class="l-actions">
+        <button class="btn btn-primary" id="l-add">+ เพิ่มโรงแรม</button>
+        <select id="l-pick" aria-label="เพิ่มจากประกาศขายจริง"><option value="">เพิ่มจากประกาศขายจริง…</option>${listingOptions()}</select>
+        ${LIST.length ? "" : `<button class="btn btn-quiet" id="l-sample">ใส่ตัวอย่าง 3 แห่งให้ดู</button>`}
+      </div>
+    </div>
+    ${LIST.map(dealCardHTML).join("")}
+    <details class="assume card"><summary style="padding:12px 16px">ตัวเลขเหล่านี้คำนวณจากสมมติฐานอะไร</summary>
+      <div style="padding:0 16px 14px"><ul>
+        <li>ค่าใช้จ่ายดำเนินงาน ${pct(MARKET.cStaff+MARKET.cUtil+MARKET.cFnb+MARKET.cSupply+MARKET.cOta+MARKET.cRepair+MARKET.cAdmin,0)} ของรายได้ และกันสำรองซ่อมใหญ่อีก ${pct(MARKET.maintCapexPct,0)} · รายได้อื่นนอกจากค่าห้อง ${pct(MARKET.fbPct,0)}</li>
+        <li>มูลค่าตามรายได้ = กำไรจากการดำเนินงานต่อปี ÷ ${pct(MARKET.exitCap,0)} (อัตราผลตอบแทนที่ผู้ซื้อโรงแรมในไทยมักต้องการ) ช่วงสมเหตุผลคิดที่ ${pct(MARKET.exitCap+.01,0)} ถึง ${pct(MARKET.exitCap-.01,0)}</li>
+        <li>คุ้มหรือไม่ วัดจากเกณฑ์ลงทุน: ผลตอบแทนต่อเงินลงทุนอย่างน้อย ${pct(MARKET.targetYoC)} · กำไรพอจ่ายหนี้ ${xx(MARKET.minDSCR)} · ผลตอบแทนผู้ถือหุ้น ${pct(MARKET.hurdleL,0)} ต่อปี</li>
+        <li>กู้ ${pct(MARKET.ltv,0)} ของราคา ดอกเบี้ย ${pct(MARKET.rate,0)} ผ่อน ${MARKET.termYears} ปี ถือ ${MARKET.holdYears} ปีแล้วขาย · สองปีแรกอัตราเข้าพักต่ำกว่าที่กรอก 7 และ 3 จุด</li>
+        <li>อยากแก้ตัวเลขเหล่านี้เฉพาะโรงแรมไหน กด "ดูรายละเอียดและปรับสมมติฐาน" ที่การ์ดนั้น</li>
+      </ul></div></details>`;
+}
+
+function saveBack(){            // กลับจากหน้ารายละเอียด: เก็บค่าที่แก้ไว้กลับเข้ารายการ
+  const d = LIST.find(x=>x.id === currentId);
+  if(d && A.price > 0 && A.rooms > 0){
+    d.priceM = +(A.price/1e6).toFixed(4); d.rooms = A.rooms; d.adr = A.adr || null;
+    d.occ = +(A.occ3*100).toFixed(2);
+    listStore(LIST);
+  }
+  currentId = null;
+}
+function openDeal(id){
+  const d = LIST.find(x=>x.id === id); if(!d || !(d.priceM > 0 && d.rooms > 0)){ toast("กรอกราคาและจำนวนห้องก่อน"); return; }
+  A = {...EMPTY(), ...dealA(d)}; if(!(d.adr > 0)) A.adr = null;
+  currentId = id; setDemo(false); setTab("sum"); syncInputs(true); openChangedGroups(); render(); writeHash();
+  scrollTo({top:0});
+}
+(function(){
+  const el = document.getElementById("list-body");
+  el.addEventListener("input", e=>{
+    const f = e.target.dataset.f; if(!f) return;
+    const card = e.target.closest(".deal"), d = LIST.find(x=>x.id === card.dataset.id); if(!d) return;
+    d[f] = f === "name" ? e.target.value : numOrNull(e.target.value);
+    listStore(LIST);
+    if(f !== "name") card.querySelector(".d-out").innerHTML = dealOutHTML(d);
+  });
+  el.addEventListener("click", e=>{
+    const b = e.target.closest("button"); if(!b) return;
+    if(b.id === "l-add"){
+      LIST.unshift({id:newId(), name:"", priceM:null, rooms:null, adr:null, occ:null});
+      listStore(LIST); renderList();
+      const first = el.querySelector(".deal .d-name"); if(first) first.focus();
+    } else if(b.id === "l-sample"){
+      LIST = [
+        {id:"d1", name:"ตัวอย่าง · โรงแรม 76 ห้อง หัวหิน (สร้าง 2024)", priceM:265, rooms:76, adr:2200, occ:65},
+        {id:"d2", name:"ตัวอย่าง · โรงแรม 24 ห้อง เกาะเสม็ด", priceM:69, rooms:24, adr:null, occ:null},
+        {id:"d3", name:"ตัวอย่าง · โรงแรม 62 ห้อง ศรีภูมิ เชียงใหม่", priceM:115, rooms:62, adr:1500, occ:65},
+      ];
+      listStore(LIST); renderList();
+    } else if(b.dataset.del){
+      LIST = LIST.filter(x=>x.id !== b.dataset.del); listStore(LIST); renderList();
+    } else if(b.dataset.open) openDeal(b.dataset.open);
+  });
+  el.addEventListener("change", e=>{
+    if(e.target.id !== "l-pick" || !e.target.value) return;
+    let o; try{ o = JSON.parse(e.target.value); }catch(err){ return; }
+    const row = (MARKETS[o.m] || {rows:[]}).rows[o.i]; if(!row) return;
+    LIST.unshift({id:newId(), name:row[2] + " · " + row[3], priceM:row[1], rooms:row[0], adr:null, occ:null});
+    listStore(LIST); renderList();
+  });
+})();
+
 /*==================== เริ่มทำงาน ====================*/
+LIST = listStore() || [];
 readHash();
 setTab(tab);
 syncChrome();
