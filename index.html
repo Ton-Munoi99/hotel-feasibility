@@ -519,7 +519,8 @@ body.listmode .tgroup:not(:last-child), body.listmode #btn-clear{display:none}
 .band .lb.bot{top:31px}
 .d-foot{display:flex; gap:10px 18px; flex-wrap:wrap; align-items:center; margin-top:12px; padding-top:10px;
   border-top:1px solid var(--line); font-size:12px; color:var(--ink-3)}
-.d-foot .btn{margin-left:auto}
+.d-act{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-top:12px; padding-top:12px; border-top:1px solid var(--line)}
+.d-act .tag{font-size:13px; color:var(--accent); font-weight:600}
 .assume{font-size:12.5px; color:var(--ink-2)}
 .assume summary{cursor:pointer; color:var(--accent); font-weight:500; padding:4px 0}
 .assume ul{margin:8px 0 0; padding-left:18px; line-height:1.8}
@@ -1123,7 +1124,7 @@ const GUIDE = [
 function dealA(d){
   const occ = (d.occ > 0 ? d.occ : MARKET.occ3*100)/100;
   return {...MARKET, price:d.priceM*1e6, rooms:d.rooms, adr:d.adr,
-          occ3:occ, occ2:Math.max(.05, occ-.03), occ1:Math.max(.05, occ-.07)};
+          occ3:occ, occ2:Math.max(.05, occ-.03), occ1:Math.max(.05, occ-.07), ...(d.ov||{})};
 }
 // คำถาม 1: ผู้ขายตั้งราคาสมเหตุผลไหม -> มูลค่าตามรายได้ = NOI ปีคงที่ ÷ อัตราผลตอบแทนตลาด (±1 จุด เป็นช่วง)
 // คำถาม 2: ซื้อราคานี้คุ้มไหม      -> ผ่านเกณฑ์ลงทุนครบไหม และราคาสูงสุดที่ยังผ่านคือเท่าไร
@@ -2201,12 +2202,12 @@ function dealOutHTML(d){
   <div class="d-foot">
     <span>ราคาต่อห้อง ${nf(sc.ppk,2)} ลบ.</span>
     <span>เช็กคร่าว ๆ ด้วยกฎ ราคาห้อง × 800–1,000 ต่อห้อง: ${m(sc.rule[0])}–${m(sc.rule[1])} ลบ.</span>
-    <button class="btn" data-open="${d.id}">ดูรายละเอียดและปรับสมมติฐาน</button>
   </div>`;
 }
 
 function dealCardHTML(d){
   const v = x => x === null || x === undefined ? "" : esc(x);
+  const n = Object.keys(d.ov||{}).length;
   return `<div class="deal" data-id="${d.id}">
     <div class="d-in">
       <div class="nm"><label for="${d.id}-name">ชื่อโรงแรม / ทำเล</label>
@@ -2222,6 +2223,10 @@ function dealCardHTML(d){
       <button class="d-del" data-del="${d.id}" title="ลบรายการนี้" aria-label="ลบรายการนี้">${TRASH}</button>
     </div>
     <div class="d-out">${dealOutHTML(d)}</div>
+    <div class="d-act">
+      ${n ? `<span class="tag">ปรับสมมติฐานเฉพาะโรงแรมนี้แล้ว ${n} ช่อง</span>` : `<span class="hint">ค่าใช้จ่าย เงินกู้ ระยะถือ ใช้ค่ามาตรฐาน · แก้เฉพาะโรงแรมนี้ได้</span>`}
+      <button class="btn btn-primary" data-open="${d.id}">แก้ไขรายละเอียด / ดูผลเต็ม ›</button>
+    </div>
   </div>`;
 }
 
@@ -2253,6 +2258,8 @@ function saveBack(){            // กลับจากหน้ารายล
   if(d && A.price > 0 && A.rooms > 0){
     d.priceM = +(A.price/1e6).toFixed(4); d.rooms = A.rooms; d.adr = A.adr || null;
     d.occ = +(A.occ3*100).toFixed(2);
+    const base = dealA({...d, ov:null}); d.ov = {};
+    for(const k of Object.keys(MARKET)) if(k !== "occ3" && !DEAL_KEYS.includes(k) && A[k] !== base[k]) d.ov[k] = A[k];
     listStore(LIST);
   }
   currentId = null;

@@ -141,4 +141,8 @@ const cm = screenDeal({priceM:42, rooms:42, adr:null, occ:null});
 ok(cm.state === "noadr" && cm.need > 500 && cm.need < 1500,
    "โรงแรมราคาถูกที่ไม่รู้ราคาห้อง ต้องได้คำตอบ ไม่ใช่ 'ไม่คุ้มทุกกรณี' (" + Math.round(cm.need) + " บาท)");
 
+const ov = screenDeal({priceM:265, rooms:76, adr:2200, occ:65, ov:{ltv:0, cStaff:.15}});
+ok(dealA({priceM:265, rooms:76, adr:2200, occ:65, ov:{ltv:0}}).ltv === 0 && ov.fair !== hh.fair,
+   "สมมติฐานที่ปรับเฉพาะโรงแรม (ov) ถูกใช้ในการคำนวณบนการ์ด");
+
 console.log(process.exitCode ? "\n*** มีข้อที่ไม่ผ่าน ***" : "\nครบทุกข้อ ✓");
