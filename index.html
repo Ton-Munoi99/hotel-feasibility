@@ -322,6 +322,163 @@ details.dd[open] summary::before{transform:rotate(90deg)}
   *{-webkit-print-color-adjust:exact; print-color-adjust:exact}
   .demobar{position:static; display:block !important}
 }
+/* ===================== รอบขัดเกลา ===================== */
+:root{ --series-1:#2a78d6; --shadow:0 1px 2px rgba(15,23,32,.06); }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --series-1:#3987e5; --shadow:none; } }
+:root[data-theme="dark"]{ --series-1:#3987e5; --shadow:none; }
+
+/* หัวเว็บ: โลโก้ + กลุ่มปุ่มตามหน้าที่ */
+.brand{align-items:center}
+.mark{width:28px; height:28px; border-radius:7px; background:var(--accent); color:var(--surface);
+  display:grid; place-items:center; flex:0 0 auto}
+.mark svg{width:17px; height:17px}
+.brand .txt{display:flex; flex-direction:column; min-width:0; line-height:1.3}
+.brand .txt b{font-size:15px}
+.brand .eye{letter-spacing:.04em; text-transform:none; font-size:11.5px;
+  font-family:"IBM Plex Sans Thai",sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.tools{align-items:center; gap:6px}
+.tgroup{display:flex; gap:4px; align-items:center}
+.tgroup + .tgroup{padding-left:8px; border-left:1px solid var(--line)}
+.btn{display:inline-flex; align-items:center; gap:6px; min-height:32px}
+.btn svg{width:14px; height:14px; flex:0 0 auto}
+.btn-danger{color:var(--fail); border-color:transparent; background:transparent}
+.btn-danger:hover{background:var(--fail-bg); border-color:var(--fail)}
+.btn-icon{padding:5px 8px}
+@media (max-width:720px){ .btn .lbl{display:none} .btn{padding:6px 9px} .top-in{gap:8px} }
+
+/* แท็บ */
+.tab{padding:11px 15px; min-height:42px}
+.tabs-in{scrollbar-width:none}
+.tabs-in::-webkit-scrollbar{display:none}
+
+/* การ์ด */
+.card,.kpi,.verdict,.cta{box-shadow:var(--shadow)}
+.card-h{padding:13px 16px}
+.card-b{padding:16px}
+
+/* ป้ายสถานะ: สี + สัญลักษณ์ + คำ เสมอ */
+.chip{display:inline-flex; align-items:center; gap:5px; padding:2px 9px; border-radius:20px;
+  font-size:12px; font-weight:600; line-height:1.6; white-space:nowrap}
+.chip.pass{background:var(--pass-bg); color:var(--pass)}
+.chip.warn{background:var(--warn-bg); color:var(--warn)}
+.chip.fail{background:var(--fail-bg); color:var(--fail)}
+
+/* คำตัดสิน */
+.verdict{padding:18px 18px 14px; border-left-width:4px}
+.v-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px}
+.v-head h2{font-size:20px; margin:0}
+.checks{margin-top:14px; border-top:1px solid var(--line)}
+.check{display:grid; grid-template-columns:minmax(0,1.5fr) minmax(90px,1fr) 176px 62px; gap:6px 14px;
+  align-items:center; padding:9px 0; border-bottom:1px solid var(--line); font-size:13px}
+.check .nm{display:flex; gap:8px; align-items:baseline; min-width:0}
+.check .nm b{font-weight:500}
+.check .nm small{color:var(--ink-3); font-size:11.5px}
+.check .sg{font-family:"IBM Plex Mono",monospace; font-weight:600; flex:0 0 auto}
+.check.pass .sg{color:var(--pass)} .check.fail .sg{color:var(--fail)}
+.check .val{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap}
+.check .val b{font-weight:600; color:var(--ink-1)}
+.check .val span{color:var(--ink-3); font-size:11.5px}
+.meter{position:relative; height:8px; border-radius:8px; overflow:visible}
+.meter.pass{background:var(--pass-bg)} .meter.fail{background:var(--fail-bg)}
+.meter i{position:absolute; left:0; top:0; bottom:0; border-radius:8px; min-width:4px}
+.meter.pass i{background:var(--pass)} .meter.fail i{background:var(--fail)}
+.meter u{position:absolute; left:66.67%; top:-3px; bottom:-3px; width:2px; background:var(--ink-2); border-radius:1px}
+@media (max-width:640px){
+  .check{grid-template-columns:1fr auto}
+  .check .meter{grid-column:1/-1; order:3}
+  .check .jump{grid-column:1/-1; order:4; text-align:left}
+}
+
+/* ตัวเลขเดี่ยวขนาดใหญ่: ฟอนต์เดียวกับเนื้อหา ตัวเลขกว้างตามจริง สีหมึก — สถานะอยู่ที่ป้าย */
+.kpi .v, .ruler-head .big{
+  font-family:"IBM Plex Sans Thai","IBM Plex Sans",sans-serif;
+  font-variant-numeric:normal; font-feature-settings:normal; color:var(--ink-1) !important; letter-spacing:-.01em}
+.ruler-head .big{font-size:40px}
+.kpi.ghost .v{color:var(--ink-3) !important}
+.kpi .t{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:2px}
+.kpi .t .chip{font-size:11px; padding:1px 7px}
+
+/* กราฟกระแสเงินสด */
+.chart-legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--ink-2); margin-bottom:10px}
+.chart-legend .k{display:inline-flex; align-items:center; gap:6px}
+.chart-legend .sw{width:10px; height:10px; border-radius:2px; background:var(--series-1)}
+.chart-legend .ln{width:16px; height:2px; background:var(--ink-1)}
+.chart{display:grid; grid-template-columns:auto 1fr; gap:0 8px}
+.yaxis{position:relative; height:200px; width:34px}
+.yaxis span{position:absolute; right:0; transform:translateY(50%); font-size:11px; color:var(--ink-3);
+  font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; line-height:1}
+.plot{position:relative; height:200px; display:flex}
+.plot .gl{position:absolute; left:0; right:0; height:1px; background:var(--line)}
+.plot .gl.base{background:var(--line-2)}
+.col{flex:1 1 0; position:relative; display:flex; justify-content:center; align-items:flex-end; outline:0; min-width:0}
+.col .bar{width:60%; max-width:24px; background:var(--series-1); border-radius:4px 4px 0 0; position:relative}
+.col:hover .bar, .col:focus-visible .bar{filter:brightness(1.15)}
+.col:focus-visible{box-shadow:inset 0 0 0 2px var(--accent); border-radius:4px}
+.col .cap{position:absolute; bottom:100%; left:50%; transform:translateX(-50%); font-size:11px; color:var(--ink-2);
+  font-family:"IBM Plex Mono",monospace; white-space:nowrap; padding-bottom:3px}
+.col .ds{position:absolute; left:0; right:0; height:2px; background:var(--ink-1); transform:translateY(50%)}
+.xaxis{grid-column:2; display:flex; padding-top:6px}
+.xaxis span{flex:1 1 0; text-align:center; font-size:11.5px; color:var(--ink-3); white-space:nowrap; overflow:hidden}
+.tip{position:fixed; z-index:70; pointer-events:none; background:var(--ink-1); color:var(--bg);
+  border-radius:8px; padding:8px 11px; font-size:12px; line-height:1.6; max-width:260px; display:none;
+  box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.tip b{display:block; font-weight:600; margin-bottom:2px}
+.tip .r{display:flex; justify-content:space-between; gap:16px}
+.tip .r span:last-child{font-family:"IBM Plex Mono",monospace; font-weight:500}
+
+/* ตารางกว้าง: ตรึงคอลัมน์ชื่อรายการ */
+table.wide th:first-child, table.wide td:first-child{position:sticky; left:0; z-index:1; background:var(--surface);
+  box-shadow:1px 0 0 var(--line); min-width:150px}
+table.wide th:first-child{background:var(--sunken); z-index:2}
+table.wide tr.em td:first-child{background:var(--sunken)}
+
+/* แถบกรอก */
+.helper{grid-column:1/-1; margin:-2px 0 4px; text-align:right; font-size:11.5px; color:var(--ink-3); min-height:0}
+.helper:empty{display:none}
+details.wrapgrp{border-top:1px solid var(--line); margin-top:8px}
+details.wrapgrp > summary{cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px; padding:11px 0 9px}
+details.wrapgrp > summary::-webkit-details-marker{display:none}
+details.wrapgrp > summary::before{content:"›"; color:var(--accent); font-size:15px; transition:transform .12s; display:inline-block; width:10px}
+details.wrapgrp[open] > summary::before{transform:rotate(90deg)}
+details.wrapgrp > summary .eye{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--accent); font-weight:600}
+details.wrapgrp > summary .badge{margin-left:auto}
+.f input{min-height:34px}
+
+/* หน้าว่าง */
+.steps{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin-top:18px;
+  padding-top:16px; border-top:1px solid var(--line)}
+.step{display:flex; gap:10px; align-items:flex-start; font-size:12.5px; color:var(--ink-2); line-height:1.55}
+.step .n{flex:0 0 auto; width:22px; height:22px; border-radius:50%; background:var(--accent-soft); color:var(--accent);
+  display:grid; place-items:center; font-size:12px; font-weight:600}
+.step b{display:block; color:var(--ink-1); font-weight:600}
+.pick{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:12px; font-size:12.5px; color:var(--ink-2)}
+.pick select{flex:1 1 240px; max-width:440px; min-height:34px; padding:5px 8px; border-radius:6px;
+  border:1px solid var(--line-2); background:var(--surface); color:var(--ink-1); font-size:12.5px}
+
+/* มือถือ: ช่องกรอกของดีลอยู่บนสุด สมมติฐานพับไว้ ผลลัพธ์ตามมาทันที */
+@media (max-width:1040px){
+  .rail{order:1; padding:14px 14px 6px}
+  .rail > *{max-width:620px}
+  .stage{order:2}
+  .calcpanel{display:none}
+  .f{grid-template-columns:1fr 140px}
+}
+@media (max-width:600px){
+  .f input, .pick select, .cmp-pick select{font-size:16px}   /* กัน iOS ซูมเองตอนแตะช่อง */
+  .ruler-head .big{font-size:32px}
+  .kpis.hero .v{font-size:26px}
+  .stage{padding:12px; gap:14px}
+}
+.demobar{top:var(--h1,46px)}
+.tabs, body.demo .tabs{top:calc(var(--h1,46px) + var(--h2,0px))}
+.rail, body.demo .rail{top:calc(var(--h1,46px) + var(--h2,0px) + var(--h3,43px));
+  max-height:calc(100vh - var(--h1,46px) - var(--h2,0px) - var(--h3,43px))}
+html{scroll-padding-top:calc(var(--h1,46px) + var(--h2,0px) + var(--h3,43px) + 12px)}
+@media (max-width:1040px){ .rail, body.demo .rail{position:static; max-height:none} }
+.col .cap{background:var(--surface); padding:0 3px 1px; margin-bottom:3px; border-radius:3px; z-index:1}
+@media (max-width:720px){ .top,.demobar{position:static} }
+@media print{ .tip{display:none !important} .col .bar{print-color-adjust:exact} }
 </style>
 <!--A2-->
 </head>
@@ -330,16 +487,23 @@ details.dd[open] summary::before{transform:rotate(90deg)}
 <header class="top">
   <div class="top-in">
     <div class="brand">
-      <b>โต๊ะวิเคราะห์ดีลโรงแรม</b>
-      <span class="eye" id="deal-name">ยังไม่มีข้อมูล</span>
+      <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V6l8-3v18M12 9l8 2v10M2 21h20M7.5 9.5v0M7.5 13.5v0M7.5 17.5v0M16 14.5v0M16 18v0"/></svg></span>
+      <span class="txt"><b>โต๊ะวิเคราะห์ดีลโรงแรม</b>
+        <span class="eye" id="deal-name">ยังไม่มีข้อมูล</span></span>
     </div>
     <div class="tools">
-      <button class="btn" id="btn-theme">ธีม</button>
-      <button class="btn" id="btn-save">บันทึกดีล</button>
-      <select class="btn" id="sel-load" style="max-width:150px"><option value="">ดีลที่บันทึก…</option></select>
-      <button class="btn" id="btn-share">คัดลอกลิงก์</button>
-      <button class="btn" id="btn-print">พิมพ์รายงาน</button>
-      <button class="btn" id="btn-clear">ล้างข้อมูลดีล</button>
+      <div class="tgroup">
+        <button class="btn" id="btn-save" title="บันทึกดีลนี้ไว้ในเครื่อง"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span class="lbl">บันทึกดีล</span></button>
+        <select class="btn" id="sel-load" style="max-width:150px" aria-label="ดีลที่บันทึกไว้"><option value="">ดีลที่บันทึก…</option></select>
+      </div>
+      <div class="tgroup">
+        <button class="btn btn-primary" id="btn-share" title="คัดลอกลิงก์ที่มีตัวเลขชุดนี้"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span class="lbl">คัดลอกลิงก์</span></button>
+        <button class="btn" id="btn-print" title="พิมพ์หรือบันทึกเป็น PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg><span class="lbl">พิมพ์รายงาน</span></button>
+      </div>
+      <div class="tgroup">
+        <button class="btn btn-icon" id="btn-theme" title="สลับธีมสว่าง/มืด" aria-label="สลับธีม"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18" /><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
+        <button class="btn btn-danger" id="btn-clear" title="ล้างข้อมูลดีลทั้งหมด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg><span class="lbl">ล้าง</span></button>
+      </div>
     </div>
   </div>
 </header>
@@ -421,6 +585,7 @@ details.dd[open] summary::before{transform:rotate(90deg)}
   · โมเดลก่อนภาษีเมื่อตั้ง CIT = 0 · ไม่รวมภาษีกำไรจากการขายทรัพย์สินตอน exit
 </footer>
 <div class="toast" id="toast"></div>
+<div class="tip" id="tip" role="tooltip"></div>
 
 <script>
 "use strict";
@@ -902,6 +1067,7 @@ function railHTML(){
         ${f.layer === "deal" ? "" : `<button class="revert hidden" data-revert="${f.k}">ย้อนค่า</button>`}</label>
       <input id="in-${f.k}" data-k="${f.k}" type="text" inputmode="decimal" autocomplete="off"
              placeholder="${esc(f.ph || (f.layer!=="deal" ? "" : ""))}">
+      ${f.k === "price" ? `<p class="helper" id="price-help"></p>` : ""}
       <div class="note-pop hidden" id="pop-${f.k}">${esc(f.d)}</div>
     </div>`;
   };
@@ -929,9 +1095,12 @@ function railHTML(){
       <span class="badge" id="deal-badge"></span></div>
     ${deal.map(fld).join("")}
     <p class="note" style="margin:6px 0 14px">กรอกแค่ <b>ราคาเสนอขาย</b> กับ <b>จำนวนห้อง</b> ก็เริ่มคำนวณได้ ที่เหลือใช้ค่าตั้งต้นตลาดไปก่อน</p>
-    <div class="rail-h" style="margin-top:6px"><span class="eye">สมมติฐานตลาด</span>
-      <button class="btn btn-quiet" id="btn-resetassume" style="margin-left:auto;font-size:11.5px">คืนค่าตั้งต้น</button></div>
-    ${groups}
+    <details class="wrapgrp" id="assume-wrap" open>
+      <summary><span class="eye">สมมติฐานตลาด · 30 ช่อง</span><span class="badge" id="assume-badge"></span></summary>
+      <p class="note" style="margin:0 0 6px">มีค่าตั้งต้นให้แล้วทุกช่อง แก้เฉพาะที่รู้ว่าดีลนี้ต่างออกไป
+        <button class="btn btn-quiet" id="btn-resetassume" style="font-size:11.5px;min-height:0;padding:0 2px">คืนค่าตั้งต้นทั้งหมด</button></p>
+      ${groups}
+    </details>
     <div class="calcpanel" id="calcpanel"></div>`;
 }
 
@@ -966,6 +1135,13 @@ function refreshRailChrome(){
     const rv = box.querySelector(".revert");
     if(rv) rv.classList.toggle("hidden", A[f.k] === MARKET[f.k]);
   });
+  const ph = document.getElementById("price-help");
+  if(ph) ph.textContent = A.price > 0
+    ? "= " + nf(A.price/1e6, A.price % 1e6 ? 2 : 0) + " ล้านบาท" + (A.rooms > 0 ? " · " + nf(A.price/A.rooms/1e6,2) + " ลบ./ห้อง" : "")
+    : "";
+  const edited = FIELDS.filter(f => f.g && A[f.k] !== MARKET[f.k]).length;
+  const ab = document.getElementById("assume-badge");
+  if(ab){ ab.textContent = edited ? "แก้แล้ว "+edited+" ช่อง" : "ใช้ค่าตั้งต้น"; ab.className = "badge" + (edited ? " on" : ""); }
   const miss = FIELDS.filter(f => f.req && !(A[f.k] > 0)).length;
   const db = document.getElementById("deal-badge");
   if(db){ db.textContent = miss ? "ต้องกรอกอีก "+miss : "ครบแล้ว"; db.className = "badge" + (miss ? " req" : ""); }
@@ -989,6 +1165,12 @@ function initRail(){
     A[k] = isFinite(raw) ? raw/f.s : (f.layer === "deal" ? null : MARKET[k]);
     if(demoMode && DEMO.values[k] !== undefined) countDemoEdits();
     render(false);
+  });
+  rail.addEventListener("keydown", e=>{
+    if(e.key !== "Enter" || !e.target.dataset.k) return;
+    const order = FIELDS.map(f=>f.k), i = order.indexOf(e.target.dataset.k);
+    const next = document.getElementById("in-" + order[i+1]);
+    if(next && F[order[i+1]].layer === "deal"){ e.preventDefault(); next.focus(); } else e.target.blur();
   });
   rail.addEventListener("blur", e=>{
     const k = e.target.dataset.k; if(!k) return;
@@ -1086,18 +1268,24 @@ function renderSum(st, r){
 
   el.innerHTML = `
     <div class="verdict ${cls}">
-      <h2>${head}</h2>
-      <p class="lead">ที่ราคาเสนอขาย ${nf(A.price/1e6,1)} ล้านบาท (${nf(r.pricePerKey/1e6,2)} ลบ./ห้อง)
-        ${A.ltv > 0 ? `กู้ ${pct(A.ltv,0)} ดอกเบี้ย ${pct(A.rate)}` : "ซื้อด้วยเงินสด"}</p>
-      <ul class="vlist">${tests.map(x=>{
+      <div class="v-head"><h2>${head}</h2>
+        <span class="chip ${cls}">${SIGN[cls]} ผ่าน ${tests.length - failed.length} จาก ${tests.length} เกณฑ์</span></div>
+      <p class="lead">ที่ราคาเสนอขาย ${nf(A.price/1e6,1)} ล้านบาท (${nf(r.pricePerKey/1e6,2)} ลบ./ห้อง) ·
+        ${A.ltv > 0 ? `กู้ ${pct(A.ltv,0)} ดอกเบี้ย ${pct(A.rate)}` : "ซื้อด้วยเงินสด"} · ถือ ${r.N} ปี</p>
+      <div class="checks">${tests.map(x=>{
         const g = x.ok ? "pass" : "fail";
-        return `<li class="${g}"><span class="mark">${SIGN[g]}</span>
-          <span>${esc(x.t.name)} <span class="dim">(${esc(x.t.thai)})</span>
-            <b class="num">${x.t.fmt(x.v)}</b> เทียบเกณฑ์ ${x.t.fmt(x.target)}
-            <button class="jump" data-jump="${x.t.field}">แก้เกณฑ์</button></span></li>`;
-      }).join("")}</ul>
+        // มาตรวัด: ขีดตั้ง = เกณฑ์ (อยู่ที่ 2/3 ของแถบ) · เกณฑ์ที่เป็นศูนย์วัดเป็นสัดส่วนไม่ได้ จึงไม่มีแถบ
+        const ratio = x.target > 0 && isFinite(x.v) ? Math.max(0, Math.min(1.5, x.v/x.target))/1.5 : null;
+        return `<div class="check ${g}">
+          <span class="nm"><span class="sg">${SIGN[g]}</span><span><b>${esc(x.t.name)}</b> <small>${esc(x.t.thai)}</small></span></span>
+          ${ratio === null ? `<span></span>` :
+            `<span class="meter ${g}" title="ขีดตั้ง = เกณฑ์"><i style="width:${(ratio*100).toFixed(1)}%"></i><u></u></span>`}
+          <span class="val"><b>${x.t.fmt(x.v)}</b> <span>เกณฑ์ ${x.t.fmt(x.target)}</span></span>
+          <button class="jump" data-jump="${x.t.field}">แก้เกณฑ์</button>
+        </div>`;
+      }).join("")}</div>
       <p class="note">คุณแก้สมมติฐานเองไป ${touched} จาก 30 ช่อง — ที่เหลือใช้ค่าตั้งต้นตลาด
-        ผลข้างบนยืนอยู่บนค่าที่คุณยังไม่ได้ตรวจ กางหมวดในแถบซ้ายเพื่อดู</p>
+        ผลข้างบนยืนอยู่บนค่าที่คุณยังไม่ได้ตรวจ <button class="jump" data-jump="occ3">เปิดดูสมมติฐาน</button></p>
     </div>
 
     <div class="card">
@@ -1109,6 +1297,12 @@ function renderSum(st, r){
     <div>
       <div class="kpis hero">${heroKPIs(r).map(kpiHTML).join("")}</div>
       <div class="kpis rest">${restKPIs(r).map(kpiHTML).join("")}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h2>กำไรจากการดำเนินงานพอจ่ายหนี้ไหม</h2>
+        <p>NOI รายปี${A.ltv > 0 ? " เทียบภาระหนี้ต่อปี" : ""} · หน่วยล้านบาท · ชี้ที่แท่งเพื่อดูตัวเลข</p></div>
+      <div class="card-b">${cashChartHTML(r)}</div>
     </div>
 
     <div class="card">
@@ -1125,27 +1319,78 @@ function renderSum(st, r){
     </div>`;
 
   renderHeat();
-  el.querySelectorAll("[data-jump]").forEach(b=>b.onclick = ()=>jumpTo(b.dataset.jump));
+}
+
+// กราฟแท่ง NOI รายปี + เส้นภาระหนี้ — แกนเดียว หน่วยเดียว (ล้านบาท)
+function cashChartHTML(r){
+  const debt = r.hasDebt;
+  const top = Math.max(...r.rows.map(x=>Math.max(x.noi, debt ? x.ds : 0)), 1);
+  const raw = top/5, pw = Math.pow(10, Math.floor(Math.log10(raw))), n = raw/pw;
+  const stepB = (n<=1?1 : n<=2?2 : n<=2.5?2.5 : n<=5?5 : 10)*pw;
+  const K = Math.max(2, Math.ceil(top*1.08/stepB)), max = K*stepB;
+  const step = stepB/1e6, d = Number.isInteger(step) ? 0 : Number.isInteger(step*10) ? 1 : 2;
+  const y = v => Math.max(0, Math.min(100, v/max*100));
+  const short = r.rows.filter(x=>debt && x.noi < x.ds).map(x=>x.t);
+  const every = r.rows.length > 16 ? 2 : 1;
+  const dsFlat = debt && r.rows.every(x=>Math.abs(x.ds - r.rows[0].ds) < 1);
+
+  return `
+    ${debt ? `<div class="chart-legend">
+      <span class="k"><span class="sw"></span>NOI (กำไรจากการดำเนินงาน)</span>
+      <span class="k"><span class="ln"></span>ภาระหนี้ต่อปี${dsFlat ? " " + mb(r.rows[0].ds) + " ลบ." : ""}</span></div>` : ""}
+    <div class="chart">
+      <div class="yaxis">${Array.from({length:K+1},(_,i)=>`<span style="bottom:${i/K*100}%">${nf(step*i,d)}</span>`).join("")}</div>
+      <div class="plot">
+        ${Array.from({length:K},(_,i)=>`<div class="gl" style="bottom:${(i+1)/K*100}%"></div>`).join("")}
+        <div class="gl base" style="bottom:0"></div>
+        ${r.rows.map((x,i)=>{
+          const tip = [["NOI", mb(x.noi,2)+" ลบ."]];
+          if(debt && x.ds > 0) tip.push(["ภาระหนี้", mb(x.ds,2)+" ลบ."], ["DSCR", xx(x.dscr)]);
+          tip.push(["Occupancy", pct(x.occ,0)], ["ADR", nf(x.adr)+" บาท"]);
+          const lab = i === 0 || i === r.rows.length-1;
+          return `<div class="col" tabindex="0" data-tip="${esc(JSON.stringify({h:"ปีที่ "+x.t, rows:tip}))}"
+                       aria-label="ปีที่ ${x.t} NOI ${mb(x.noi,2)} ล้านบาท">
+            <div class="bar" style="height:${y(x.noi)}%">${lab ? `<span class="cap">${mb(x.noi)}</span>` : ""}</div>
+            ${debt && x.ds > 0 ? `<div class="ds" style="bottom:${y(x.ds)}%"></div>` : ""}
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="xaxis">${r.rows.map((x,i)=>`<span>${i % every === 0 ? "ปี "+x.t : ""}</span>`).join("")}</div>
+    </div>
+    <p class="note">${!debt ? "ซื้อด้วยเงินสด ไม่มีภาระหนี้ — NOI ทั้งก้อนเป็นกระแสเงินสดของผู้ถือหุ้น"
+      : short.length === 0 ? `<span class="chip pass">${SIGN.pass} NOI สูงกว่าภาระหนี้ทุกปี</span>`
+      : `<span class="chip fail">${SIGN.fail} NOI ไม่พอจ่ายหนี้ ${short.length} ปี</span> ปีที่ ${short.join(", ")} ต้องควักเงินเพิ่มเอง`}
+      <button class="jump" data-goto="model" style="margin-left:8px">ดูตาราง 10 ปีเต็ม</button></p>`;
+}
+
+function listingOptions(){
+  return Object.entries(MARKETS).map(([mk, m])=>
+    `<optgroup label="${esc(mk)}">` + m.rows.map((row,i)=>[row,i]).filter(([row])=>row[0]).map(([row,i])=>
+      `<option value="${esc(JSON.stringify({m:mk,i}))}">${esc(row[2])} · ${row[0]} ห้อง · ${row[1]} ลบ.</option>`).join("") +
+    `</optgroup>`).join("");
 }
 
 function emptyHTML(){
   return `
     <div class="cta">
-      <h2>กรอกราคาและจำนวนห้อง แล้วผลจะขึ้นทันทีทุกตัวอักษร</h2>
-      <p>ยังไม่ต้องกรอกครบ 33 ช่อง — อีก 30 ช่องเป็นสมมติฐานตลาดที่ใส่ค่าตั้งต้นไว้ให้แล้ว
-         แก้ทีหลังได้ และถ้ายังไม่รู้ ADR ก็เว้นว่างไว้ได้ แอปจะคำนวณย้อนกลับให้ว่าต้องทำ ADR เท่าไรถึงคุ้ม</p>
+      <h2>ราคานี้คุ้มไหม และควรต่อรองเหลือเท่าไร</h2>
+      <p>กรอกแค่ราคาเสนอขายกับจำนวนห้องจากประกาศ ผลจะขึ้นทันทีทุกตัวอักษร
+         ที่เหลืออีก 30 ช่องมีค่าตั้งต้นตลาดให้แล้ว แก้ทีหลังได้</p>
       <div class="row">
-        <button class="btn btn-primary" id="btn-start">เริ่มกรอก — ราคาเสนอขาย</button>
+        <button class="btn btn-primary" id="btn-start">เริ่มกรอกดีลของคุณ</button>
         <button class="btn btn-quiet" id="btn-demo">หรือดูตัวอย่าง: โรงแรมหัวหิน 76 ห้อง 265 ล้าน</button>
       </div>
+      <div class="pick"><label for="pick-listing">หรือเลือกจากประกาศขายจริง</label>
+        <select id="pick-listing"><option value="">— 58 ประกาศ: หัวหิน · ระยอง–เกาะเสม็ด · ภาคเหนือ —</option>${listingOptions()}</select></div>
+      <div class="steps">
+        <div class="step"><span class="n">1</span><span><b>กรอก 2 ช่อง</b>ราคาเสนอขายและจำนวนห้อง ยังไม่รู้ ADR ก็เว้นไว้ได้</span></div>
+        <div class="step"><span class="n">2</span><span><b>ดูเพดานราคา</b>แอปบอกราคาสูงสุดที่ยังผ่านทุกเกณฑ์ และเกณฑ์ไหนเป็นตัวจำกัด</span></div>
+        <div class="step"><span class="n">3</span><span><b>ตรวจก่อนซื้อ</b>เทียบกับดีลอื่น ทดสอบกรณีแย่ แล้วไล่เช็กลิสต์ 36 ข้อ</span></div>
+      </div>
     </div>
-    <div class="ghostbox"><h3>ควรเสนอราคาเท่าไร</h3>
-      <p>จะบอกเพดานราคาสูงสุดที่ยังผ่านทุกเกณฑ์ และบอกว่าเกณฑ์ไหนคือตัวจำกัด</p></div>
-    <div class="kpis hero">${["Yield on Cost","Levered IRR","DSCR ปี 1"].map(k=>
+    <div class="kpis hero">${[["เพดานราคาที่ควรเสนอ","ราคาสูงสุดที่ยังผ่านทุกเกณฑ์"],["Yield on Cost","ผลตอบแทนต่อเงินลงทุนรวม"],["DSCR ปี 1","กำไรพอจ่ายหนี้กี่เท่า"]].map(([k,t])=>
       `<div class="kpi ghost"><span class="k">${k}</span><span class="v">—</span>
-       <span class="t">รอข้อมูลดีล</span></div>`).join("")}</div>
-    <div class="ghostbox"><h3>ถ้าสมมติฐานพลาด</h3>
-      <p>ตารางนี้จะบอกว่าถ้า Occupancy พลาดไป 5 จุด หรือ ADR ต่ำกว่าที่คิด 10% ผลจะเปลี่ยนแค่ไหน</p></div>`;
+       <span class="t">${t}</span></div>`).join("")}</div>`;
 }
 
 function reverseHTML(){
@@ -1199,6 +1444,7 @@ function rulerHTML(r){
   const x = v => ((v - d0)/(d1 - d0))*100;
 
   const passing = bind.p >= price;
+  const close = Math.abs(x(bind.p) - x(price)) < 26;      // % ของความกว้างแกน
   const diff = Math.abs(bind.p - price), diffPct = diff/price;
   const sLo = Math.min(bind.p, price), sHi = Math.max(bind.p, price);
 
@@ -1219,13 +1465,14 @@ function rulerHTML(r){
             title="${esc(c.t.name)} ${nf(c.p/1e6,1)} ลบ."></div>`).join("")}
         ${[[bind.p, `เพดาน · ${esc(bind.t.name)}`, "bind"], [price, "ราคาเสนอขาย", "ask"]].map(([v,lab,cls])=>{
           const px = x(v);
-          const edge = px < 18 ? "left:0;transform:none;text-align:left"
-                     : px > 82 ? "right:0;left:auto;transform:none;text-align:right" : "";
+          let edge = px < 18 ? "left:0;transform:none;text-align:left"
+                   : px > 82 ? "right:0;left:auto;transform:none;text-align:right" : "";
+          if(close && cls === "ask") edge += ";top:60px";
           return `<div class="pin ${cls}" style="left:${px}%">
             <span class="pin-lbl" style="${edge}"><b>${nf(v/1e6,1)}</b>${lab}</span></div>`;
         }).join("")}
       </div>
-      <p class="ruler-foot">
+      <p class="ruler-foot"${close ? ' style="margin-top:96px"' : ""}>
         หมุดดำ = ราคาที่ผู้ขายตั้ง · หมุดสีเน้น = เพดานของเกณฑ์ที่จำกัดราคา · ขีดบาง = เพดานของเกณฑ์อื่น
         (ตัวเลขครบทุกเกณฑ์อยู่ที่แท็บ "ตรวจโมเดล")
         ${bad.length ? `<br><b style="color:var(--fail)">เกณฑ์ที่ไม่ผ่านไม่ว่าราคาเท่าไร:</b> ${bad.map(c=>esc(c.t.name)).join(", ")} — เพดานข้างบนจึงยังไม่ครอบคลุมเกณฑ์เหล่านี้` : ""}
@@ -1236,7 +1483,7 @@ function rulerHTML(r){
 /*---------- การ์ดตัวชี้วัด ----------*/
 function kpiHTML(x){
   return `<div class="kpi ${x.c||""}"><span class="k">${esc(x.k)}${x.sub?` <small>${esc(x.sub)}</small>`:""}</span>
-    <span class="v">${x.v}</span><span class="t">${x.t}${x.c?` <span class="stat ${x.c}">${SIGN[x.c]} ${MARK[x.c]}</span>`:""}</span></div>`;
+    <span class="v">${x.v}</span><span class="t">${x.c?`<span class="chip ${x.c}">${SIGN[x.c]} ${MARK[x.c]}</span>`:""}<span>${x.t}</span></span></div>`;
 }
 function heroKPIs(r){
   const a = [
@@ -1329,7 +1576,7 @@ function renderModel(st, r){
   el.innerHTML = `
     <div class="card"><div class="card-h"><h2>โมเดล 10 ปี</h2>
       <p>หน่วยล้านบาท เว้นแต่ระบุ · ${payback ? `เงินผู้ถือหุ้นคืนทุนปีที่ ${payback.t}` : `ยังไม่คืนทุนภายใน ${r.N} ปีถ้าไม่นับเงินที่ได้จากการขาย`}</p></div>
-      <div class="card-b scroll"><table>
+      <div class="card-b scroll"><table class="wide">
         <thead><tr>${H.map(h=>`<th>${h}</th>`).join("")}</tr></thead>
         <tbody>${defs.map(([lab,fn,em])=>`<tr class="${em?"em":""}"><td>${lab}</td>
           ${r.rows.map(x=>`<td class="n">${fn(x)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>
@@ -1638,19 +1885,67 @@ function toast(msg){
 }
 function jumpTo(k){
   const f = F[k];
-  if(f && f.g){ const d = [...document.querySelectorAll("details.grp")]
-    .find(x=>x.querySelector("summary").textContent.startsWith(f.g)); if(d) d.open = true; }
+  if(f && f.g){
+    const w = document.getElementById("assume-wrap"); if(w) w.open = true;
+    const d = document.querySelector(`details.grp[data-g="${f.g}"]`); if(d) d.open = true;
+  }
   const el = document.getElementById("in-"+k);
-  if(el){ el.scrollIntoView({block:"center", behavior:"smooth"}); el.focus(); }
+  if(el){ el.scrollIntoView({block:"center", behavior:"smooth"}); el.focus({preventScroll:true}); }
 }
+function pickListing(v){
+  let o; try{ o = JSON.parse(v); }catch(e){ return; }
+  const row = (MARKETS[o.m] || {rows:[]}).rows[o.i]; if(!row) return;
+  A = {...EMPTY(), price:row[1]*1e6, rooms:row[0], market:o.m};
+  setDemo(false); setTab("sum"); syncInputs(true); render(); writeHash();
+  toast("เติมราคาและจำนวนห้องจากประกาศแล้ว — ใส่ ADR เพื่อดูผลเต็ม");
+}
+// tooltip ตัวเดียวใช้ทั้งแอป — ใส่ข้อความด้วย textContent เท่านั้น
+function showTip(el, x, y){
+  let d; try{ d = JSON.parse(el.dataset.tip); }catch(e){ return; }
+  const tip = document.getElementById("tip");
+  tip.textContent = "";
+  const h = document.createElement("b"); h.textContent = d.h; tip.appendChild(h);
+  d.rows.forEach(([k,v])=>{
+    const row = document.createElement("div"); row.className = "r";
+    const a = document.createElement("span"), b = document.createElement("span");
+    a.textContent = k; b.textContent = v; row.append(a,b); tip.appendChild(row);
+  });
+  tip.style.display = "block";
+  const w = tip.offsetWidth, hh = tip.offsetHeight;
+  tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, x - w/2)) + "px";
+  tip.style.top  = (y - hh - 14 < 8 ? y + 18 : y - hh - 14) + "px";
+}
+const hideTip = () => { document.getElementById("tip").style.display = "none"; };
+document.addEventListener("pointermove", e=>{
+  const c = e.target.closest && e.target.closest("[data-tip]");
+  c ? showTip(c, e.clientX, e.clientY) : hideTip();
+});
+document.addEventListener("focusin", e=>{
+  if(e.target.dataset && e.target.dataset.tip){
+    const b = e.target.getBoundingClientRect(); showTip(e.target, b.left + b.width/2, b.top);
+  }
+});
+document.addEventListener("focusout", hideTip);
+document.addEventListener("scroll", hideTip, true);
+document.addEventListener("change", e=>{ if(e.target.id === "pick-listing" && e.target.value) pickListing(e.target.value); });
 function countDemoEdits(){
   demoTouched = Object.keys(DEMO.values).filter(k => A[k] !== DEMO.values[k]).length;
   document.getElementById("demo-msg").innerHTML = demoTouched
     ? `<b>แก้จากดีลตัวอย่างแล้ว ${demoTouched} ช่อง</b> — กด "ใช้เป็นดีลของฉัน" เพื่อเลิกป้ายตัวอย่าง`
     : `<b>กำลังดูดีลตัวอย่าง</b> — ตัวเลขทั้งหมดนี้ไม่ใช่ดีลของคุณ`;
 }
+function syncChrome(){
+  // นับเฉพาะแถบที่ติดหนึบจริง — แถบที่เลื่อนตามหน้าไม่กินพื้นที่ด้านบน
+  const px = sel => { const e = document.querySelector(sel);
+    return e && e.offsetParent !== null && getComputedStyle(e).position === "sticky" ? e.offsetHeight : 0; };
+  const st = document.documentElement.style;
+  st.setProperty("--h1", px(".top") + "px");
+  st.setProperty("--h2", px(".demobar") + "px");
+  st.setProperty("--h3", px(".tabs") + "px");
+}
+addEventListener("resize", syncChrome);
 function setDemo(on){
-  demoMode = on; document.body.classList.toggle("demo", on);
+  demoMode = on; document.body.classList.toggle("demo", on); syncChrome();
   if(on) countDemoEdits();
 }
 function loadDemo(){
@@ -1732,7 +2027,10 @@ document.getElementById("btn-theme").onclick = ()=>{
 };
 document.addEventListener("click", e=>{
   if(e.target.id === "btn-demo") loadDemo();
-  if(e.target.id === "btn-start"){ const el = document.getElementById("in-price"); if(el) el.focus(); }
+  if(e.target.id === "btn-start"){ const el = document.getElementById("in-price");
+    if(el){ el.scrollIntoView({block:"center", behavior:"smooth"}); el.focus({preventScroll:true}); } }
+  if(e.target.dataset && e.target.dataset.jump) jumpTo(e.target.dataset.jump);
+  if(e.target.dataset && e.target.dataset.goto){ setTab(e.target.dataset.goto); writeHash(); scrollTo({top:0}); }
 });
 
 // พิมพ์: CSS กาง <details> ที่ปิดอยู่ไม่ได้ ต้องเปิดด้วย JS แล้วคืนสถานะเดิม
@@ -1746,9 +2044,13 @@ window.addEventListener("afterprint", ()=>{ printOpened.forEach(d=>d.open = fals
 /*==================== เริ่มทำงาน ====================*/
 readHash();
 setTab(tab);
+syncChrome();
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(syncChrome);
 initRail();
 paintRail();
 openChangedGroups();
+if(matchMedia("(max-width:1040px)").matches && !FIELDS.some(f => f.g && A[f.k] !== MARKET[f.k]))
+  document.getElementById("assume-wrap").open = false;
 render();
 renderDD();
 refreshDealList();
